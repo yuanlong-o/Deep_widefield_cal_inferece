@@ -35,7 +35,7 @@ end
 dParams.objNA      = 0.3;                                                  % Default objective numerical aperture
 dParams.NA         = 0.3;                                        % Default excitation numerical aperture                                                
 dParams.n          = 1.35;                                                 % Default index of refraction in tissue
-dParams.n_diff     = 0.02;                                                 % Default shift in index of refraction from vessels to tissue
+dParams.n_diff     = 0.03;                                                 % Default shift in index of refraction from vessels to tissue. We set 0.03 for better results
 dParams.lambda     = 0.488;                                                 % Default one-photon excitation wavelength (microns)
 dParams.obj_fl     = 18;                                                  % Default objective focal length (mm), for a 10x objective
 

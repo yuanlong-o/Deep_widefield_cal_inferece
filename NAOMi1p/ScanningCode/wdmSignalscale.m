@@ -52,4 +52,5 @@ lambda = lambda*1e-6;
 pavg   = 1e-3*pavg/(6.626e-34 * 3e8/lambda); % times hc/lambda
 
 Ftavg  = phi*eta*conc*epsilon* nidx* pavg * lambda / vol * vol_params.vres^2; % per micron^2
+% add 2 multiplier to match the real situations
 % about 1 photon per pulse (close to 80M photons/s) - or average 10 photons/pixel

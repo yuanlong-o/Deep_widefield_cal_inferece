@@ -67,7 +67,7 @@ if freq_opt
     scan_img = scan_img(y_ix(1):y_ix(2),y_jx(1):y_jx(2));                  % Crop the image
 else
     scan_img = 0;
-    for ll = 1:size(psf2,3)
+    for ll = 1:size(psf2,3) % depth tiling
         scan_img = scan_img + conv2(neur_vol(:,:,ll),psf2(:,:,ll),'same');% Iteratively add in the scanned layers.
     end
 end

@@ -15,7 +15,7 @@ RUSH_ai148d_config
 FOV_sz = 600;% FOV 600, mm
 nt = 2000;  % 200 frames
 fn = 10; % 10 Hz
-exp_level = 1; % emperial value, for different expression level in different mice
+exp_level = 5; % emperial value, for different expression level in different mice
 pavg = 0.5; %mW per mm2
 
 
@@ -75,7 +75,8 @@ saveastiff(im2uint16(PSF_struct.psfB.mask / max(PSF_struct.psfB.mask, [], 'all')
 saveastiff(im2uint16(PSF_struct.psfT.mask/ max(PSF_struct.psfT.mask, [], 'all')), sprintf('%s\\psfT_colmask.tiff', output_dir))
 
 %% generate neurons
-tic                                           
+tic                                    
+spike_opts.N_bg
 [neur_act,spikes] = generateTimeTraces(spike_opts,[],vol_out.locs);        % Generate time traces using AR-2 process
 fprintf('Simulated temporal activity in %f seconds.\n', toc); 
 
@@ -97,7 +98,7 @@ saveas(gcf, sprintf('%s\\dend.jpg', output_dir)),close
 %% peform imaging    
 clc
 scan_volume_1p(vol_out, PSF_struct, neur_act, ...
-                       vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, 1, output_dir); % Perform the scanning simulation
+                       vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
 
 
 

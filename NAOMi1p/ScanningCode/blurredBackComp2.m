@@ -76,7 +76,7 @@ if freq_opt
     y_jx   = ceil((sz(2)-size(TMPvol,2)-1)/2) + [1,size(TMPvol,2)];        % Get dim 2 sizes of image (basically cropping the convolution
     img_out = img_out(y_ix(1):y_ix(2),y_jx(1):y_jx(2));                    % Crop the image
 else
-    img_out = conv2(img_out, psf_lowres,'same');                           % Blur with the low-resolution "psf"
+    img_out = conv2(img_out, psf_lowres,'same');                           % Blur with the low-resolution "psf", just 2D.
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

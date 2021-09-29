@@ -283,25 +283,30 @@ for ll = 1:size(soma_act,1) % for neuron number
     end
 end
 
-% normalize activity
+% min activity
 soma_min = min(soma_act,[],2);
 median_min = median(soma_min);
+dend_act = single(neur_act.dend);
+dend_act_min = min(dend_act,[],2);
+bg_act = single(neur_act.bg);
+bg_act_min = min(bg_act,[],2);
 
+% adjust the min act of neurons
 ind = find(soma_min > median_min );
 for i = 1 : length(ind)
     soma_act(i, :) = soma_act(i, :) - min(soma_act(i, :)) + median_min;
 end
+
+% % normalize activity
+median_min80 = prctile(soma_min, 80);
+% 
 % cut off the too-high baseline
-
-dend_act = single(neur_act.dend);
-dend_act_min = min(dend_act,[],2);
 dend_act_max = max(dend_act,[],2);
-median_min_dend = prctile(dend_act_min, 95);
+median_min_dend50 = prctile(dend_act_min, 50);
 
-bg_act = single(neur_act.bg);
-bg_act_min = min(bg_act,[],2);
+
 bg_act_max = max(bg_act,[],2);
-median_min_bg95 = prctile(bg_act_min, 95);
+% median_min_bg995 = prctile(bg_act_min, 99.5);
 median_min_bg50 = prctile(bg_act_min, 50);
 
 % disable apical dendrites
@@ -311,15 +316,15 @@ dend_act(vol_params.N_neur + 1 : vol_params.N_neur + vol_params.N_den, :) = 0;
 for ll = 1:size(bg_act,1) % for neuron number
     buf = bg_act(ll,:) + median_min_bg50 ;
     if max(buf) > 0
-        bg_act(ll,:) = buf / max(buf(:)) * median_min_bg95;
+        bg_act(ll,:) = buf / max(buf(:)) * bg_act_max(ll);
     end
 end
 
-% dendrites
+% % dendrites
 for ll = 1:size(dend_act,1) % for neuron number
-    buf = dend_act(ll,:) + median_min_dend;
+    buf = dend_act(ll,:) + median_min_dend50;
     if max(buf) > 0
-        dend_act(ll,:) = buf / max(buf(:)) * median(soma_min);
+        dend_act(ll,:) = buf / max(buf(:)) * median_min80;
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -472,37 +477,42 @@ if ~isstruct(PSF)
         end
         
         % top and bottom masks
-%         if(~isempty(psfT))
-%             if(~isempty(t_mask))
-%                 top_mask = 1./t_mask;
-%                 bot_mask = 1./t_mask;
-%             else
-%                 top_mask = ones(size(clean_img_w_bg,1),size(clean_img_w_bg,2),'single');
-%                 bot_mask = ones(size(clean_img_w_bg,1),size(clean_img_w_bg,2),'single');            
-%             end
-%             if(isfield(psfT,'mask'))
-%                 top_mask = top_mask.*psfT.mask;
-%                 bot_mask = bot_mask.*psfB.mask;
-%             end
-%             if(isempty(1:z_loc-1))
-%                 top_img = blurredBackComp2(WMPvol_w_bg,1:size(WMPvol_w_bg,3),...
-%                            psfT.freq_psf,psfT.weight, top_mask, 1, [], f0vol);          
-%             else
-%                 top_img = blurredBackComp2(WMPvol_w_bg,1:z_loc-1,psfT.freq_psf,...
-%                                          psfT.weight, top_mask, 1, psfT.psfZ, f0vol);
-%             end
-%             if(isempty(z_loc+Np3:size(WMPvol_w_bg,3)))
-%                 bot_img = blurredBackComp2(WMPvol_w_bg,1:size(WMPvol_w_bg,3),...
-%                            psfB.freq_psf,psfB.weight, bot_mask, 1, [], f0vol);                      
-%             else
-%                 bot_img = blurredBackComp2(WMPvol_w_bg,z_loc+Np3:size(WMPvol_w_bg,3),...
-%                            psfB.freq_psf,psfB.weight, bot_mask, 1, psfB.psfZ, f0vol);            
-%             end
-%             top_img = top_img*(sigscale/(sfrac^2));
-%             bot_img = bot_img*(sigscale/(sfrac^2));
-% 
-%             clean_img_w_bg = clean_img_w_bg + top_img + bot_img;
-%         end
+        if(~isempty(psfT))
+            if(~isempty(t_mask))
+                top_mask = 1./t_mask;
+                bot_mask = 1./t_mask;
+            else
+                top_mask = ones(size(clean_img_w_bg,1),size(clean_img_w_bg,2),'single');
+                bot_mask = ones(size(clean_img_w_bg,1),size(clean_img_w_bg,2),'single');            
+            end
+            if(isfield(psfT,'mask'))
+                top_mask = top_mask.*psfT.mask;
+                bot_mask = bot_mask.*psfB.mask;
+            end
+            % top image
+            if(isempty(1:z_loc-1))
+                % so the top img is still based on the whole volume
+                top_img = blurredBackComp2(WMPvol_w_bg,1:size(WMPvol_w_bg,3),...
+                           psfT.freq_psf,psfT.weight, top_mask, 1, [], f0vol);          
+            else
+                top_img = blurredBackComp2(WMPvol_w_bg,1:z_loc-1,psfT.freq_psf,...
+                                         psfT.weight, top_mask, 1, psfT.psfZ, f0vol);
+            end
+            if(isempty(z_loc+Np3:size(WMPvol_w_bg,3)))
+                bot_img = blurredBackComp2(WMPvol_w_bg,1:size(WMPvol_w_bg,3),...
+                           psfB.freq_psf,psfB.weight, bot_mask, 1, [], f0vol);                      
+            else
+                bot_img = blurredBackComp2(WMPvol_w_bg,z_loc+Np3:size(WMPvol_w_bg,3),...
+                           psfB.freq_psf,psfB.weight, bot_mask, 1, psfB.psfZ, f0vol);            
+            end
+            top_img = top_img*(sigscale/(sfrac^2));
+            bot_img = bot_img*(sigscale/(sfrac^2));
+               
+            clean_img_w_bg = clean_img_w_bg + bot_img * 0.1+ top_img * 0.1;
+            clean_img_w_bg = clean_img_w_bg + ...
+                                            imfilter(bot_img, round(20 / vol_params.vres)) * 1e-3 + ...
+                                            imfilter(top_img, round(20 / vol_params.vres)) * 1e-3 ;
+        end
         
         %% motions 
         if ~scan_params.motion
