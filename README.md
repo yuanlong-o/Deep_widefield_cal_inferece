@@ -1,4 +1,4 @@
-# Deep widefield calcium inference (DWCI)
+# Deep widefield neuron finder (DeepWonder)
 
 Implementation for deep widefield calcium inference (DWCI)
 
