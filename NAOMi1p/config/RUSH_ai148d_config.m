@@ -53,7 +53,7 @@ spike_opts.smod_flag = 'hawke';
 wdm_params.lambda = 0.532; % emission wavelength
 wdm_params.pavg = 0.5;                                                 % power in units of mW, for whole FOV
 wdm_params.qe  = 0.7; % sensor QE
-exp_level = 1; % control the brightness of neurons 
+exp_level = 10; % control the brightness of neurons 
 
 scan_params.motion = false; %  motion simulation flat=g
 scan_params.verbose = 2; % details

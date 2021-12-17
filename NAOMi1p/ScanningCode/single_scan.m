@@ -20,6 +20,8 @@ function scan_img = single_scan(neur_vol, psf_sz, psf2, varargin)
 %
 % 2016 - Adam Charles
 
+
+% modified by YZ. last update: 9/18/2021.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Parse Inputs
 
@@ -58,10 +60,7 @@ if freq_opt
     sz = size(psf2);                                                       % Get the sizes of the post-convolution array
     scan_img = ifft(ifft(sum(fft(fft(neur_vol2, sz(1), 1), sz(2), 2).*psf2,3), ...
                                               [], 1), [], 2, 'symmetric'); % Perform convolution in the Fourier domain in both NON-axial dimensions
-% sz = size(neur_vol2) + size(psf) - 1;                                     % Get the sizes of the post-convolution array
-% scan_img = ifft(ifft(fft(fft(neur_vol2, sz(1), 1), sz(2), 2) .* ...
-%           fft(fft(psf2, sz(1), 1), sz(2), 2), [], 1), [], 2, 'symmetric'); % Perform convolution in the Fourier domain in both NON-axial dimensions
-%     scan_img = sum(scan_img, 3);                                           % Sum along the axial dimension
+
     y_ix     = ceil((psf_sz(1)-1)/2) + [1,size(neur_vol2,1)];              % Get dim 1 size of image (basically cropping the convolution
     y_jx     = ceil((psf_sz(2)-1)/2) + [1,size(neur_vol2,2)];              % Get dim 2 sizes of image (basically cropping the convolution
     scan_img = scan_img(y_ix(1):y_ix(2),y_jx(1):y_jx(2));                  % Crop the image

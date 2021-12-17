@@ -30,6 +30,7 @@ function [mask,psfs3,psfs,psfTS,psfBS,psf2p2] = genCorticalLightPathLite_1p(vol_
 %   - psfs            - All PSFs at each simulated position
 %
 % 2016 - Alex Song and Adam Charles
+% modified by YZ. last update: 12/17/2021.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Parameters for light path obscurations

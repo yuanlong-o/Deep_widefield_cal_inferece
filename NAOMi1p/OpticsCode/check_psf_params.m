@@ -40,9 +40,9 @@ dParams.lambda     = 0.488;                                                 % De
 dParams.obj_fl     = 18;                                                  % Default objective focal length (mm), for a 10x objective
 
 % sampling related
-dParams.ss         = 2;                                                    % Default subsampling factor for fresnel propagation (from volume voxel size)
-dParams.sampling   = 50;                                                   % Default spatial sampling for tissue occlusion mask
-dParams.psf_sz     = [36 36 100];                                           % Default one-photon PSF size simulated (microns), this is typically for 200 um range of a 10x objective
+dParams.ss         = 4;                                                    % Default subsampling factor for fresnel propagation (from volume voxel size)
+dParams.sampling   = 200;                                                  % Default spatial sampling for tissue occlusion mask
+dParams.psf_sz     = [36 36 100];                                          % Default one-photon PSF size simulated (microns), this is typically for 200 um range of a 10x objective
 dParams.prop_sz    = 10;                                                   % Default fresnel propagation length outside of volume (microns)
 dParams.blur       = 3;                                                    % Default psf lateral blurring (microns)
 dParams.scatter_sz = [0.51 1.56 4.52 14.78]';                              % Default scattering object sizes (microns), column vector
@@ -59,7 +59,7 @@ psf_params = setParams(dParams, psf_params);
 if psf_params.fastmask
     psf_params.FM.sampling = 10;
     psf_params.FM.fineSamp = 2;
-    psf_params.FM.ss       = 1;
+    psf_params.FM.ss       = 4;
 end
 
 end

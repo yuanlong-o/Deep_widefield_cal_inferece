@@ -31,6 +31,7 @@ function [mask,psfs3,psfs,psf2p2] = genCorticalLightPath_1p(vol_params,psf_param
 %
 % 2016 - Alex Song and Adam Charles
 
+% modified by YZ. last update: 12/17/2021.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Parameters for light path obscurations
 

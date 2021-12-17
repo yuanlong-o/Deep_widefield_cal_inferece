@@ -2,21 +2,22 @@ clc, clear
 close all
 
 %% this file is used to generate NAOMi1p data
-%  last update: 9/28/2021. YZ
+%  last update: 12/17/2021. YZ
 
 %% add path
 installNAOMi1p
 
 
-%% load predifined data
+%% load pre-defined data
+% pre-defined configuration file for RUSH
 RUSH_ai148d_config
 
 %% RUSH 148d config
-FOV_sz = 600;% FOV 600, mm
-nt = 2000;  % 200 frames
-fn = 10; % 10 Hz
-exp_level = 5; % emperial value, for different expression level in different mice
-pavg = 0.5; %mW per mm2
+FOV_sz = 600;% FOV, um
+nt = 1000;  % frames
+fn = 10; % frame rate
+exp_level = 1; % emperial value, for different expression level in different mice
+pavg = 0.5; %mW per mm^2
 
 
 %% parser
@@ -76,10 +77,9 @@ saveastiff(im2uint16(PSF_struct.psfT.mask/ max(PSF_struct.psfT.mask, [], 'all'))
 
 %% generate neurons
 tic                                    
-spike_opts.N_bg
 [neur_act,spikes] = generateTimeTraces(spike_opts,[],vol_out.locs);        % Generate time traces using AR-2 process
 fprintf('Simulated temporal activity in %f seconds.\n', toc); 
-
+save(sprintf('%s\\spike_structure.mat', output_dir), 'neur_act', 'spikes', 'spike_opts')
 %% plot traces
 figure('position', [100, 100, 400, 800]), imagesc(neur_act.soma(:, : )),  title('soma'), colormap(othercolor('BuGn7'))
 saveas(gcf, sprintf('%s\\soma_heat.jpg', output_dir)), close
@@ -97,8 +97,13 @@ saveas(gcf, sprintf('%s\\dend.jpg', output_dir)),close
 
 %% peform imaging    
 clc
+% 
+% vol_out = importdata(sprintf('%s\\vol_out.mat', output_dir));
+% PSF_struct = importdata(sprintf('%s\\PSF_struct.mat',output_dir));     
+% load(sprintf('%s\\spike_structure.mat', output_dir));
+% 
 scan_volume_1p(vol_out, PSF_struct, neur_act, ...
-                       vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
+                       vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, 5, output_dir); % Perform the scanning simulation
 
 
 

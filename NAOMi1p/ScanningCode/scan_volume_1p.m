@@ -77,15 +77,13 @@ if(floor(scan_params.sfrac)~=scan_params.sfrac)
 end
 
 vol_sz_px             = size(neur_vol.neur_vol);                           % Get image size (equivalent to vol_params.vol_sz*vol_params.vres
-%noise_params.sigscale = tpmSignalscale(tpm_params)*(spike_opts.dt)* ...
-%                        (scan_params.sfrac^2)/(vol_sz_px(1)*vol_sz_px(2)); % Set the signal scaling based on the power levels and spatio-temporal volume (i.e. dwell time X voxel volume)
- 
+
 %%% CURRENT SIGSCALE NEEDS TO BE MODIFIED TO BETTER ACCOUNT FOR DIFFERENT
 %%% VOLUME SIZES   
 % calculate signal scale
 noise_params.sigscale = wdmSignalscale(wdm_params,[], vol_params)*(spike_opts.dt)* ...
-                          (scan_params.sfrac^2); % Set the signal scaling based on the power levels and spatio-temporal volume (i.e. dwell time X voxel volume)
-
+                          (scan_params.sfrac^2);
+                      
 if ~isstruct(neur_act)                                                     % Make sure that neur_act is a struct
     if size(neur_act,3)==1
         neur_act = struct('soma',neur_act);                                % Can be a Kx(nt)x1 array if only soma activity is provided
@@ -268,10 +266,10 @@ for ll = 1:size(soma_act,1) % for neuron number
     end
 end
 
-% make sure soma are uniform
 median_val = median(somaVol_act) ;
 somaVol_act(somaVol_act > median_val) = median_val;
 somaVol_act(somaVol_act < median_val * 0.1) = 0;
+
 % find amplification such that all neurons are uniformly firing
 for ll = 1:size(soma_act,1) % for neuron number
     buf_act = soma_act(ll,1 : end);
@@ -296,14 +294,12 @@ ind = find(soma_min > median_min );
 for i = 1 : length(ind)
     soma_act(i, :) = soma_act(i, :) - min(soma_act(i, :)) + median_min;
 end
-
+% soma_act = soma_act * 2;
 % % normalize activity
 median_min80 = prctile(soma_min, 80);
 % 
 % cut off the too-high baseline
-dend_act_max = max(dend_act,[],2);
 median_min_dend50 = prctile(dend_act_min, 50);
-
 
 bg_act_max = max(bg_act,[],2);
 % median_min_bg995 = prctile(bg_act_min, 99.5);
@@ -320,6 +316,7 @@ for ll = 1:size(bg_act,1) % for neuron number
     end
 end
 
+
 % % dendrites
 for ll = 1:size(dend_act,1) % for neuron number
     buf = dend_act(ll,:) + median_min_dend50;
@@ -327,6 +324,7 @@ for ll = 1:size(dend_act,1) % for neuron number
         dend_act(ll,:) = buf / max(buf(:)) * median_min80;
     end
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Preset a base volume that is motified with the activity of each frame.. 
 % This saves a LOT of computational time 
@@ -403,7 +401,7 @@ end
 
 %% main scan loop
 if ~isstruct(PSF)
-    for kk = 1:Nt  % Iterate over time steps
+    for kk = start_Nt + 1 : Nt  % Iterate over time steps
         if scan_params.verbose >1
             tic
         end
@@ -431,12 +429,12 @@ if ~isstruct(PSF)
         for ll = 1:size(soma_act,1)                                        % For large volumes, mex functions decrease runtimes a lot
             if(soma_act(ll,kk)>0)&&(~isempty(somaVol{ll,2}))
                 array_SubSubTest(WMPvol_w_bg,somaVol{ll,1},...
-                                        somaVol{ll,2},exp_level * soma_act(ll,kk));    % Iteratively add in each neuron's soma activity
+                                        somaVol{ll,2}, exp_level * soma_act(ll,kk));    % Iteratively add in each neuron's soma activity
             end
         end 
         clean_img_wo_bg = single_scan(WMPvol_w_bg(:,:,...
-                  z_loc:(z_loc+Np3-1)) + f0vol_wo_bg(:,:,z_loc:(z_loc+Np3-1)), ...
-                  size(PSF), freq_psf, scan_avg, true); 
+                                        z_loc:(z_loc+Np3-1)) + f0vol_wo_bg(:,:,z_loc:(z_loc+Np3-1)), ...
+                                        size(PSF), freq_psf, scan_avg, true); 
         
         
         % nuc
@@ -530,8 +528,11 @@ if ~isstruct(PSF)
         mov_wo_bg(:,:,kk) = clean_img_wo_bg;
         %% add noise
         
-        samp_img  = PoissonGaussNoiseModel(clean_img_w_bg, noise_params);        % Run data through the noise model        
+        samp_img  = PoissonGaussNoiseModel_camera(clean_img_w_bg, noise_params);        % Run data through the noise model        
         mov_w_bg(:,:,kk) = samp_img;  
+        
+        % debug mode
+        saveastiff(im2uint16(samp_img / 65535), sprintf('%s\\debug\\%d.tiff', output_dir, kk - start_Nt))
         %% saving tiff, optional for large files
         if (~isempty(scan_params.fsimPath))
             tifLinkFsim = tifappend(tifLinkFsim,samp_img,tagFsim, ...
@@ -545,7 +546,7 @@ if ~isstruct(PSF)
             fprintf('.');
         elseif scan_params.verbose >1
             Ttmp = toc;
-            fprintf('Scanned frame %d (%f s)\n',kk,Ttmp)
+            fprintf('Scanned frame %d (%f s)\n',kk - start_Nt,Ttmp)
         end
     end
 elseif isfield(PSF,'left')                                                 % Check if separate beam v_twins configuration is being used
@@ -567,8 +568,8 @@ if scan_params.verbose >= 1
 end
 
 % save
-mov_w_bg = mov_w_bg(:, :, start_Nt : end);
-mov_wo_bg = mov_wo_bg(:, :, start_Nt : end);
+mov_w_bg = mov_w_bg(:, :, start_Nt + 1 : end);
+mov_wo_bg = mov_wo_bg(:, :, start_Nt + 1: end);
 saveastiff(im2uint16(mov_w_bg / max(mov_w_bg(:))), sprintf('%s\\mov_w_bg.tiff', output_dir))
 saveastiff(im2uint16(mov_wo_bg / max(mov_wo_bg(:))), sprintf('%s\\mov_wo_bg.tiff', output_dir))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
