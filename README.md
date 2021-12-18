@@ -1,5 +1,5 @@
 # Deep widefield neuron finder (DeepWonder)
-
+<img src="img/deepwonder_logo.png" width="400" align="center">
 Implementation for deep widefield neuron finder (DeepWonder)
 
 ## Overview
