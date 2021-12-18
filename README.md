@@ -5,7 +5,7 @@ Implementation for deep widefield neuron finder (DeepWonder)
 ## Overview
 Widefield imaging provides optical access to multi-millimeter fields of view in video rate, but cell-resolved calcium imaging has mostly contaminated by tissue scattering and calcium inference suffers multiple times slower processing speed than two-photon microscope in the same scale. We present a deep widefield neuron finder (DeepWonder), which is fueled by numerical recordings but effectively works on experimental data with an order of magnitude of speed improvement and improved precision and accuracy. With DeepWonder, widefield calcium recordings can be quickly converted into background-free movies, and neuronal segments and activites then be demixed out. For more details and results, please see our companion paper at TODO.
 
-<img src="img/Workflow.png" width="800" align="center">
+<img src="img/Workflow.png" width="600" align="center">
 
 ## Demo data without re-training
 This tutorial will show how DeepWonder removes backgrounds in  widefield captures and further segments neurons.
