@@ -16,7 +16,7 @@ dParams.phi    = [];                                                       % if 
 dParams.eta    = 0.6;                                                      % eGFP quantum yield
 
 dParams.conc   = 10;                                                       % Average of literature measurements (Huber et al 2012, Zariwala et al 2012), uM
-dParams.epsilon  = 4.4e6;                                                  % extinction value
+dParams.epsilon  = 5.6e5;                                                  % extinction value
 dParams.qe = 0.7; % camera QE
 dParams.lambda = 0.48;                                                     % 0.48um is the default for excitation wavelength
 

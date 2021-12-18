@@ -41,28 +41,27 @@ function varargout = calcium_dynamics(S, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input Parsing
 
-if nargin < 2;    cal_params = struct;
-else;             cal_params = varargin{1};
+if nargin < 2
+    cal_params.TMP = [];
+else
+    cal_params = varargin{1};
 end
 
-if nargin < 3;    prot_type = 'GCaMP6f';
-else;             prot_type = varargin{2};
+if nargin < 3
+    prot_type = 'GCaMP6';
+else
+    prot_type = varargin{2};
 end
 
-if nargin < 4;     over_samp = 1;
-else;              over_samp = varargin{3};
+if nargin < 4
+    over_samp = 1;
+else
+    over_samp = varargin{3};
 end
-
-if isempty(over_samp); over_samp = 1; end
-
-if nargin < 5;     ext_mult = 1;
-else;              ext_mult = varargin{4};
-end
-
 
 cal_params = check_cal_params(cal_params, prot_type);                      % Check param struct and fill in with defaults
 % Extract necessary params
-ext_rate = ext_mult*cal_params.ext_rate;
+ext_rate = cal_params.ext_rate;
 ca_bind  = cal_params.ca_bind;
 ca_rest  = cal_params.ca_rest;
 ind_con  = cal_params.ind_con;
@@ -79,7 +78,7 @@ t_off    = cal_params.t_off;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Simulate the calcium iteratively
 if(over_samp>1)
-    S = reshape([S;zeros((over_samp-1)*size(S,1), size(S,2))], ...
+    S         = reshape([S;zeros((over_samp-1)*size(S,1), size(S,2))], ...
                                                           size(S,1), []);  % Over-sample the spike trains
 end
 C      = zeros(size(S,1),size(S,2),'single');                              % Initialize the calcium array to be the same size as the event-array
@@ -104,6 +103,12 @@ if strcmp(sat_type,'single')
     end
 elseif strcmp(sat_type,'Ca_DE')
     oversampFlag = 0;
+    % Harded-coded changes reflect changes in fitted parameters
+%     dt        = 3*dt/(over_samp);                                              % Adjust the delta-time appropriately
+%     ca_amp    = 3*ca_amp/(over_samp);
+%     if(over_samp==1)
+%       ca_amp = ca_amp*1.185;
+%     end
     a  = a_bind(1)*100*dt; b = a_ubind(1)*100*dt;                          % Decay rates are optimized of 100Hz sampling. the "100*dt' multiplicative factor modifies the decay rates to the actua, desired, sampling 
     for kk = 2:size(S,2)
         C(:,kk) = C(:,kk-1) + (-dt*ext_rate*(C(:,kk-1) ...
@@ -115,11 +120,11 @@ elseif strcmp(sat_type,'Ca_DE')
     end
     clear S
     h_ca = single(mk_doub_exp_ker(t_on, t_off, ca_amp, dt));
-    TMP  = convn(C(1,:)-ca_rest, h_ca(:).', 'full')+ca_rest;
-    TMP  = TMP(:,1:over_samp:end);
-    CB   = zeros(size(C,1),size(TMP,2),'like',C);
+    TMP = convn(C(1,:)-ca_rest, h_ca(:).', 'full')+ca_rest;
+    TMP = TMP(:,1:over_samp:end);
+    CB = zeros(size(C,1),size(TMP,2),'like',C);
     for kk = 1:size(C,1)
-      TMP      = convn(C(kk,:)-ca_rest, h_ca(:).', 'full') + ca_rest;      % Apply the impulse response and convolve
+      TMP = convn(C(kk,:)-ca_rest, h_ca(:).', 'full')+ca_rest;        % Apply the impulse response and convolve
       CB(kk,:) = TMP(1:over_samp:end);
     end
     C  = C(:,1:over_samp:end);
@@ -176,40 +181,27 @@ end
 end
 
 function F = sat_nonlin(CB, prot_type)
-    switch lower(prot_type)                                                % First calculate the dF/F curve (as in Badura et al.)
-        case {'gcamp6','gcamp6f'}
+    switch prot_type                                                       % First calculate the dF/F curve (as in Badura et al.)
+        case {'GCaMP6','gcamp6'}
             F0 = 1;
             F = 25.2*(1./(1 + (290e-9./CB).^2.7));                         % Hill equation values taken from Badura et al. 2014
-        case 'gcamp6s'
-            F0 = 1;
-%            F = 53.8*(1./(1 + (147e-9./CB).^2.45));                        % Hill equation values taken from Dana et al. 2019
-             F = 27.2*(1./(1 + (147e-9./CB).^2.45));                        % Hill equation values taken from Dana et al. 2019
-        case 'gcamp3'
+        case {'GCaMP3','gcamp3'}
             F0 = 2;
             F = 12*(1./(1 + (287e-9./CB).^2.52));                          % Hill equation values taken from Badura et al. 2014
-        case {'ogb1','ogb-1'}
+        case {'ogb1','ogb-1','OGB-1','OGB1'}
             F0 = 1;
             F = 14*(1./(1 + 250e-9./CB));                                  % Hill equation values taken from Badura et al. 2014
-        case {'gcamp6-rs09','gcamp6rs09'}
+        case {'GCaMP6-RS09','GCaMP6RS09','gcamp6-rs09','gcamp6rs09'}
             F0 = 1.4;
             F = 25*(1./(1 + (520e-9./CB).^3.2));                           % Hill equation values taken from Badura et al. 2014
-        case {'gcamp6-rs06','gcamp6rs06'}
+        case {'GCaMP6-RS06','GCaMP6RS06','gcamp6-rs06','gcamp6rs06'}
             F0 = 1.2;
             F = 15*(1./(1 + (320e-9./CB).^3));                             % Hill equation values taken from Badura et al. 2014
-        case 'jgcamp7f'
+        case 'GCaMP7'
             F0 = 1;
-            F = 30.2*(1./(1 + (174e-9./CB).^2.3));                         % Hill equation values taken from Dana et al. 2019
-        case 'jgcamp7s'
-            F0 = 1;
-            F = 40.4*(1./(1 + (68e-9./CB).^2.49));                         % Hill equation values taken from Dana et al. 2019
-        case 'jgcamp7b'
-            F0 = 1;
-            F = 22.1*(1./(1 + (82e-9./CB).^3.06));                         % Hill equation values taken from Dana et al. 2019
-        case 'jgcamp7c'
-            F0 = 1;
-            F = 145.6*(1./(1 + (298e-9./CB).^2.44));                       % Hill equation values taken from Dana et al. 2019
+            F = 25.2*(1./(1 + (200e-9./CB).^1.9));                         % Hill equation values made up
         otherwise 
-            warning('Unknown protien type. Defaultin to GCaMP6f...\n')
+            warning('Unknown protien type. Defaultin to GCaMP6...\n')
             F0 = 1;
             F = 25.2*(1./(1 + (290e-9./CB).^2.7));                         % Hill equation values taken from Badura et al. 2014
     end

@@ -16,7 +16,7 @@ RUSH_ai148d_config
 FOV_sz = 600;% FOV, um
 nt = 1000;  % frames
 fn = 10; % frame rate
-exp_level = 1; % emperial value, for different expression level in different mice
+% exp_level = 10; % emperial value, for different expression level in different mice
 pavg = 0.5; %mW per mm^2
 
 
@@ -77,9 +77,9 @@ saveastiff(im2uint16(PSF_struct.psfT.mask/ max(PSF_struct.psfT.mask, [], 'all'))
 
 %% generate neurons
 tic                                    
-[neur_act,spikes] = generateTimeTraces(spike_opts,[],vol_out.locs);        % Generate time traces using AR-2 process
+% [neur_act,spikes] = generateTimeTraces(spike_opts,[],vol_out.locs);        % Generate time traces using AR-2 process
+fun_time_trace_generation(vol_out, nt, fn, output_dir)
 fprintf('Simulated temporal activity in %f seconds.\n', toc); 
-save(sprintf('%s\\spike_structure.mat', output_dir), 'neur_act', 'spikes', 'spike_opts')
 %% plot traces
 figure('position', [100, 100, 400, 800]), imagesc(neur_act.soma(:, : )),  title('soma'), colormap(othercolor('BuGn7'))
 saveas(gcf, sprintf('%s\\soma_heat.jpg', output_dir)), close
@@ -88,22 +88,17 @@ saveas(gcf, sprintf('%s\\bg_heat.jpg', output_dir)), close
 figure('position', [100, 100, 400, 800]), imagesc(neur_act.dend(:, : )), title('dendrites'), colormap(othercolor('BuGn7'))
 saveas(gcf, sprintf('%s\\dend_heat.jpg', output_dir)), close
 
-figure('position', [100, 100, 400, 800]), temporal_trace_render(neur_act.soma, 'k'), title('soma')
-saveas(gcf, sprintf('%s\\soma.jpg', output_dir)),close
-figure('position', [100, 100, 400, 800]), temporal_trace_render(neur_act.bg, 'k'), title('bg')
-saveas(gcf, sprintf('%s\\bg.jpg', output_dir)),close
-figure('position', [100, 100, 400, 800]), temporal_trace_render(neur_act.dend, 'k'), title('dendrites')
-saveas(gcf, sprintf('%s\\dend.jpg', output_dir)),close
-
 %% peform imaging    
 clc
 % 
 % vol_out = importdata(sprintf('%s\\vol_out.mat', output_dir));
 % PSF_struct = importdata(sprintf('%s\\PSF_struct.mat',output_dir));     
-% load(sprintf('%s\\spike_structure.mat', output_dir));
-% 
+spike_opts = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\spikes_opts.mat', output_dir));
+neur_act = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\S.mat', output_dir));
+
+exp_level = 5;
 scan_volume_1p(vol_out, PSF_struct, neur_act, ...
-                       vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, 5, output_dir); % Perform the scanning simulation
+                       vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
 
 
 

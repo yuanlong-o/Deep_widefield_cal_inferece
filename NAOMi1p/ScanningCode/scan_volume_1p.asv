@@ -66,7 +66,8 @@ else
     g_blur = PSF_struct.blur;                                              % Extract point transversal blur function from PSF struct
 end
 
-start_Nt = 200;    
+start_Nt = 100;    
+
 scan_params  = check_imaging_params(scan_params);                             % Check the scanning parameter struct for missing elements
 noise_params = check_noise_params(noise_params);                           % Check the noise parameter struct for missing elements
 spike_opts   = check_spike_opts(spike_opts);                               % Check spike/fluorescence simulation parameters
@@ -138,7 +139,7 @@ else
     N3 = scan_params.vol_sz(3);                                            % Get depth dimension
 end
 Nt = size(neur_act.soma,2);                                                % Get number of time steps
-
+end_Nt =  Nt  - start_Nt;
 if ~isstruct(PSF)                                                          % Get size of the PSF
     [Np1,Np2,Np3] = size(PSF);
 elseif isfield(PSF,'left')
@@ -251,9 +252,20 @@ if(isfield(scan_params,'nuc_label'))&&(scan_params.nuc_label>=1)
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Setup scanning volume
+%%
+%% Setup the temporal signals for the scanning volume
+%  list these three since the calcium signals are generated for them
+
+% activities of soma
 soma_act = single(neur_act.soma);
+
+% activities of dendrites
+dend_act = single(neur_act.dend);
+
+bg_act = single(neur_act.bg);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% normalize soma activities
 somaVol_act = [];
 window_1 = 20;
 window_2 = 200; 
@@ -281,48 +293,50 @@ for ll = 1:size(soma_act,1) % for neuron number
     end
 end
 
-% min activity
-soma_min = min(soma_act,[],2);
-median_min = median(soma_min);
-dend_act = single(neur_act.dend);
-dend_act_min = min(dend_act,[],2);
-bg_act = single(neur_act.bg);
-bg_act_min = min(bg_act,[],2);
-
-% adjust the min act of neurons
-ind = find(soma_min > median_min );
-for i = 1 : length(ind)
-    soma_act(i, :) = soma_act(i, :) - min(soma_act(i, :)) + median_min;
-end
-
-% % normalize activity
-median_min80 = prctile(soma_min, 80);
-% 
-% cut off the too-high baseline
-median_min_dend50 = prctile(dend_act_min, 50);
-
-bg_act_max = max(bg_act,[],2);
-% median_min_bg995 = prctile(bg_act_min, 99.5);
-median_min_bg50 = prctile(bg_act_min, 50);
-
 % disable apical dendrites
 dend_act(vol_params.N_neur + 1 : vol_params.N_neur + vol_params.N_den, :) = 0;
+%% reduce the variance of background fluctuations
+% min activity
+% 
+% cut off the too-high baseline
+
+bg_act_max = max(bg_act,[],2);
+soma_max = max(soma_act,[],2);
+dend_max = max(dend_act,[],2);
+% median_min_bg995 = prctile(bg_act_min, 99.5);
+median_soma = median(soma_max );
+median_bg= median(bg_act_max);
+
 
 % background dendirites
-for ll = 1:size(bg_act,1) % for neuron number
-    buf = bg_act(ll,:) + median_min_bg50 ;
-    if max(buf) > 0
-        bg_act(ll,:) = buf / max(buf(:)) * bg_act_max(ll);
-    end
-end
+% for ll = 1:size(bg_act,1) % for neuron number
+%     buf = bg_act(ll,:) +median_bg;
+%     if max(buf) > 0
+%         bg_act(ll,:) = buf / max(buf(:)) * bg_act_max(ll);
+%     end
+% end
+
 
 % % dendrites
 for ll = 1:size(dend_act,1) % for neuron number
-    buf = dend_act(ll,:) + median_min_dend50;
+    buf = dend_act(ll,:) + max(dend_max);
     if max(buf) > 0
-        dend_act(ll,:) = buf / max(buf(:)) * median_min80;
+        dend_act(ll,:) = buf / max(buf(:)) * median_soma * 0.02;
     end
 end
+
+% statistics
+max(soma_act(:))
+
+max(bg_act(:))
+max(dend_act(:))
+
+max(std(soma_act, 0, 2))
+max(std(dend_act, 0, 2))
+max(std(bg_act, 0, 2))
+
+%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Preset a base volume that is motified with the activity of each frame.. 
 % This saves a LOT of computational time 
@@ -511,13 +525,13 @@ if ~isstruct(PSF)
         end
         
         %% motions 
-        if ~scan_params.motion
+        if scan_params.motion % typically without motion
             clean_img_wo_bg = imgSubRowShift(clean_img_wo_bg, scan_buff, x_pos, ...
                                                             round(y_off)); % Sub-select a portion of an image with row shifting
         end
         clean_img_wo_bg = imresize(clean_img_wo_bg, [floor((N1)/sfrac * scale_ratio), floor((N2)/sfrac * scale_ratio)]);
         
-        if ~scan_params.motion
+        if scan_params.motion
             clean_img_w_bg = imgSubRowShift(clean_img_w_bg, scan_buff, x_pos, ...
                                                             round(y_off)); % Sub-select a portion of an image with row shifting
         end
@@ -530,7 +544,7 @@ if ~isstruct(PSF)
         mov_w_bg(:,:,kk) = samp_img;  
         
         % debug mode
-        saveast
+        saveastiff(im2uint16(samp_img / 65535), sprintf('%s\\debug\\%d.tiff', output_dir, kk - start_Nt))
         %% saving tiff, optional for large files
         if (~isempty(scan_params.fsimPath))
             tifLinkFsim = tifappend(tifLinkFsim,samp_img,tagFsim, ...
@@ -544,7 +558,7 @@ if ~isstruct(PSF)
             fprintf('.');
         elseif scan_params.verbose >1
             Ttmp = toc;
-            fprintf('Scanned frame %d (%f s)\n',kk,Ttmp)
+            fprintf('Scanned frame %d (%f s)\n',kk - start_Nt,Ttmp)
         end
     end
 elseif isfield(PSF,'left')                                                 % Check if separate beam v_twins configuration is being used
@@ -566,8 +580,8 @@ if scan_params.verbose >= 1
 end
 
 % save
-mov_w_bg = mov_w_bg(:, :, start_Nt : end);
-mov_wo_bg = mov_wo_bg(:, :, start_Nt : end);
+mov_w_bg = mov_w_bg(:, :, start_Nt + 1 : end);
+mov_wo_bg = mov_wo_bg(:, :, start_Nt + 1: end);
 saveastiff(im2uint16(mov_w_bg / max(mov_w_bg(:))), sprintf('%s\\mov_w_bg.tiff', output_dir))
 saveastiff(im2uint16(mov_wo_bg / max(mov_wo_bg(:))), sprintf('%s\\mov_wo_bg.tiff', output_dir))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

@@ -71,10 +71,10 @@ if ~isfield(spike_opts,'alpha')
     spike_opts.alpha = 1;                                                  % Default the Gamma distribution to an Exponential distribution (alpha=1)
 end
 if ~isfield(spike_opts,'burst_mean')
-    spike_opts.burst_mean = 10;                                            % Default the mean of the Poisson distribution for number of spikes per burst to be 4
+    spike_opts.burst_mean = 10;                                             % Default the mean of the Poisson distribution for number of spikes per burst to be 4
 end
 if ~isfield(spike_opts,'smod_flag')
-    spike_opts.smod_flag = 'hawke';                                       % Default simulation model is the Hawke's model
+    spike_opts.smod_flag = 'hawkes';                                       % Default simulation model is the Hawke's model
 end
 if ~isfield(spike_opts,'p_off')
     spike_opts.p_off = 0.2;                                           

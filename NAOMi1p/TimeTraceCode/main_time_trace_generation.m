@@ -1,66 +1,51 @@
-function varargout = generateTimeTraces(spike_opts, varargin)
+clc, clear
+close all
+%% this file is to allocate the temporal signals to the generated sample.
+%  note there is no noise contaminations here.
+%  all traces looks perfectly great.
 
-% S = generateTimeTraces(spike_opts, S_times) 
-% 
-% Generate time traces for a number of simulated neurons. Each neuron fires
-% with as am independent Poisson process with a given rate. The firing
-% rates are Gamma-distributed, and the firing strength is log-normal
-% distributed. The neural spikes are then either convolved with an AR-1 or
-% AR-2 impulse response to model the calcium fluorescence dynamics, or
-% directly used in a wither a single- or quad-occupancy model of Ca2+ and
-% protein interactions to create more biophysiologically accurate
-% fluorescence traces.
-% The inputs to this function is:
-%   -spike_opts   - Struct containing the main options used for generating
-%                   time traces. Includes
-%     .nt         - Number of time-steps to simulate (default = 1000)
-%     .K          - Number of neurons to generate time traces for (default =
-%                   30)
-%     .rate       - Spiking rate for each neuron (default = 0.001 t/spike)
-%     .dt         - Time difference between time-points (inverse of
-%                   frame-rate to generate samples at) (default = 1/30 s) 
-%     .mu         - (default = 0)
-%     .sig        - (default = 1)
-%     .dyn_type   - Type of dynamics to simulate. Can be 'AR1'
-%                   (autoregressive model with 1 time lag), 'AR2' (AR model
-%                   with 2 time lags), 'single' (single-compartment Ca2+ 
-%                   <-> protein dynamics), 'Ca_DE' (single-compartment Ca2+
-%                    <-> double-expo protein dynamics) (default = 'Ca_DE')
-%     .N_bg       - Number of background/neuropil time-traces to generate
-%                   (default = 0)
-%     .prot       - Protein selection for Ca2+ dynamics and fluorescence
-%                   simulation. Options are 'GCaMP3' and 'GCaMP6' (default
-%                   = 'GCaMP6')
-%     .alpha      - Gamma distribution parameter that modulates the rate
-%                   distribution. Defaults to an to an Exponential
-%                   distribution (alpha=1) 
-%     .burst_mean - Mean of the Poisson distribution for number of spikes
-%                   per burst to be (default = 4)
-%   -spike_predef - OPTIONAL second argument that lets a user put in a
-%                   Kx(nt) pre-defined spike-train for each neuron. In this
-%                   case the neuropil/background components are still 
-%                   generated independently.
-% 
-% The ouputs of this function is
-%  - S      - Struct containing the simulated fluorescence activity for
-%             each of the K neurons for all nt time-steps
-%     .soma - Kx(nt) matrix where each row is the activity of each cell at
-%             the soma 
-%     .dend - Kx(nt) matrix where each row is the activity of each cell at
-%             the dendrites [can be optional]
-%     .bg   - N_bgx(nt) matrix where each row is the activity of each 
-%             background/neuropil component [can be optional]
-% 
-% 2016 - Adam Charles & Alex Song
+% note the trace is highly related to the neuron volume, so I will send it
+% back to the volume dir.
+% last update: 8/20/2020. YZ
+%% spike parameters
+% choose which volume you would like to use
+input_dir = '..\\Volume_simulation_all\\volume_size_600_600_200_depth_0_res_1_neuron_num_720_1';
+input_file = 'volume_output_size_600_600_200_depth_0_res_1_neuron_num_720.mat';
+all_output = importdata(sprintf('%s\\%s', input_dir, input_file));
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Input Parsing
 
-spike_opts    = check_spike_opts(spike_opts);                              % Check time-trace generation options
-spike_opts.nt = ceil(spike_opts.nt*100*spike_opts.dt);                     % Spiking is simulated at 100Hz, so make the time traces longer so that later downsampling gives the desired # outputs
-prot          = spike_opts.prot;                                           % Extract the type of protein to simulate
-l_buff        = 500;                                                       % Create a buffer to allow differential equations to hit steady-state
 
+n_locs = all_output.vol_out.locs;
+spike_opts.K      = size(all_output.vol_out.gp_vals,1);                               % Read off the number of neurons
+spike_opts.rate   = 1e-3;   
+% The average rate of firing for all the components can be modulated using
+% this parameter. default is 1e-3
+spike_opts.mu = 0;  % Default the mean of the normal r.v. used in the log-normal to zero
+spike_opts.sig = 1; % Default the standard-deviation of the normal r.v. used in the log-normal to one
+spike_opts.dyn_type = 'Ca_DE'; % Default to a single-compartment Ca2+ model with double-exponential smoothing, double exponential
+
+spike_opts.rate_dist = 'gamma';  % Default to a gamma distribution of firing rates
+spike_opts.dt = 1/6;   % Default sampling rate is 30 Hz
+spike_opts.nt = 1000; % Default number of time-steps to simulate is 1000
+% spike_opts.rate = 1e-3; % Default inverse average of 1s between bursts (1000 1/100 s units) WAS: spike_opts.rate = 0.16;
+spike_opts.N_bg = 0; % Default to only one background component
+spike_opts.prot = 'GCaMP6'; 
+spike_opts.alpha = 1; % Default the Gamma distribution to an Exponential distribution (alpha=1 for exponential distribuion)
+spike_opts.burst_mean = 10; % Default the mean of the Poisson distribution for number of spikes per burst to be 4
+
+% spike_opts.smod_flag = 'hawkes'; % Default simulation model is the Hawke's model
+spike_opts.smod_flag = 'other';
+% spike_opts.p_off = 0.2;
+spike_opts.p_off = -1;
+spike_opts.selfact = 1.2; 
+spike_opts.min_mod = [0.4 2.53];
+spike_opts.spikeflag = 1;  
+spike_opts.dendflag = 1; % Flag to simulate dendrite traces per component
+spike_opts.axonflag = 1;  % Flag to simulate axon traces per component
+                          
+outdir = sprintf('%s\\firing_rate_%g_smod_flag_%s', input_dir, spike_opts.rate, spike_opts.smod_flag);
+mkdir(outdir)                        
+% Check time-trace generation options
 if (isfield(spike_opts,'spikeflag')) && spike_opts.spikeflag               % Check whether or not to save the spiking process itself
     spikeflag = 1;                                                         % Default to saving it
 else
@@ -83,55 +68,43 @@ if (spike_opts.N_bg>0)&&(axonflag)                                         % Che
     error('background must be either axons or GPs!')                       % Error out if both are set as it is not clear what to do
 end
 
-if nargin > 1
-    S_times = varargin{1};
-    if(iscell(S_times))
-        S_times = single(spikesCellToVec(S_times))*7.6e-6;
+spike_opts.nt = ceil(spike_opts.nt*100*spike_opts.dt);                     % Spiking is simulated at 100Hz, so make the time traces longer so that later downsampling gives the desired # outputs
+prot          = spike_opts.prot;                                           % Extract the type of protein to simulate
+l_buff        = 500;                                                       % Create a buffer to allow differential equations to hit steady-state
+
+
+
+if (spike_opts.N_bg>0)&&(axonflag)                                         % Check if both kind of background is set (axonal neuropil models or the older Gaussian Process neuropil models)
+    error('background must be either axons or GPs!')                       % Error out if both are set as it is not clear what to do
+end
+
+%% not sure what is the S_times
+S_times = [];
+if(iscell(S_times))
+    S_times = single(spikesCellToVec(S_times))*7.6e-6;
+end
+
+if (~isempty(S_times))&&((size(S_times,1) ~= spike_opts.K)||...
+                                   (size(S_times,2) ~= spike_opts.nt)) % Check if there is a correctly sized pre-determined set of spiking activity for the cells
+    warning('Incompatible size: Make sure number of components and time traces length is OK')
+end
+if (~isempty(S_times))
+    if(size(S_times,1) ~= spike_opts.K)
+        spike_opts.K = size(S_times,1);
     end
-  
-    if (~isempty(S_times))&&((size(S_times,1) ~= spike_opts.K)||...
-                                       (size(S_times,2) ~= spike_opts.nt)) % Check if there is a correctly sized pre-determined set of spiking activity for the cells
-        warning('Incompatible size: Make sure number of components and time traces length is OK')
+    if(size(S_times,2) ~= spike_opts.nt)
+        spike_opts.nt = size(S_times,2);
     end
-    if (~isempty(S_times))
-        if(size(S_times,1) ~= spike_opts.K)
-            spike_opts.K = size(S_times,1);
-        end
-        if(size(S_times,2) ~= spike_opts.nt)
-            spike_opts.nt = size(S_times,2);
-        end
-        n_desired = floor(spike_opts.nt/(100*spike_opts.dt));              % Store the official value for later use
-    else
-        n_desired = floor(spike_opts.nt/(100*spike_opts.dt));              % Store the official value for later use
-    end
+    n_desired = floor(spike_opts.nt/(100*spike_opts.dt));              % Store the official value for later use
 else
-    n_desired = spike_opts.nt;                                             % Store the official value for later use
-    S_times   = [];
+    n_desired = spike_opts.nt;                                         % Store the official value for later use
 end
 
-if nargin > 2
-    n_locs = varargin{2};
-else
-    n_locs = [];
-end
-
-if nargin > 3
-    disc_opt = varargin{3};
-    if isempty(disc_opt); disc_opt = true; end
-else
-    disc_opt = true;
-end
-if isempty(disc_opt); disc_opt = true; end
-
-if nargin > 4
-    mod_vals = varargin{4};
-else
-    mod_vals = [];
-end
-
+%% other parameters
+disc_opt = true; % ????
+mod_vals = []; % ????
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generate spike times
-
 if isempty(S_times)
     switch spike_opts.smod_flag
         case 'hawkes'
@@ -161,7 +134,6 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generate underlying calcium fluorescence levels from the spikes
-
 switch spike_opts.dyn_type
     case 'AR1'
         % Generate impulse response
@@ -187,8 +159,11 @@ switch spike_opts.dyn_type
     case 'Ca_DE'
         cal_params.sat_type = 'Ca_DE';                                     % Set the calcium dynamics to 'single' mode (simpler dynamics)
         cal_params.dt       = 1/100;                                       % Set the calcium dynamics framerate
-%         cal_params.ext_rate = 292.3;                                       % Somas needs an even higher extrusion rate
-        [~,~,S_somas]  = calcium_dynamics(S_times, cal_params, prot, 1, 1);% Simulate the dynamics and recover the fluoresence over time               
+        cal_params.ext_rate = 292.3;                                       % Somas needs an even higher extrusion rate
+        cal_params.t_on     = 0.8535;
+        cal_params.t_off    = 98.6173;
+        cal_params.ca_amp   = 76.1251;                                     % Somas needs an even higher extrusion rate
+        [~,~,S_somas]  = calcium_dynamics(S_times, cal_params, prot);      % Simulate the dynamics and recover the fluoresence over time               
         S_somas        = S_somas(:,l_buff+1:end);                          % Remove buffering period
     case 'double'
         warning('The "double" method is not fully vetted: use at your own risk.')
@@ -207,7 +182,6 @@ clear S_somas                                                              % Fre
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generate a dendrite-specific time-traces for each cell
-
 if(dendflag)
 switch spike_opts.dyn_type
     case 'AR1'
@@ -234,8 +208,11 @@ switch spike_opts.dyn_type
     case 'Ca_DE'
         cal_params.sat_type = 'Ca_DE';                                     % Set the calcium dynamics to 'single' mode (simpler dynamics)
         cal_params.dt       = 1/100;                                       % Set the calcium dynamics framerate
-%         cal_params.ext_rate = 292.3/2;                                     %
-        [~,~,S_dend]  = calcium_dynamics(S_times, cal_params, prot, 1,1/2);% Simulate the dynamics and recover the fluoresence over time               
+        cal_params.ext_rate = 292.3/2;                                     %
+        cal_params.t_on     = 0.8535;
+        cal_params.t_off    = 98.6173;
+        cal_params.ca_amp   = 76.1251;     
+        [~,~,S_dend]  = calcium_dynamics(S_times, cal_params, prot);       % Simulate the dynamics and recover the fluoresence over time               
         S_dend        = S_dend(:,l_buff+1:end);                            % Remove buffering period
     case 'double'
         warning('The "double" method is not fully vetted: use at your own risk.')
@@ -288,8 +265,11 @@ switch spike_opts.dyn_type
     case 'Ca_DE'
         cal_params.sat_type = 'Ca_DE';                                     % Set the calcium dynamics to 'single' mode (simpler dynamics)
         cal_params.dt       = 1/100;                                       % Set the calcium dynamics framerate
-%         cal_params.ext_rate = 292.3/4;                                     % 
-        [~,~,S_axon]  = calcium_dynamics(S_times, cal_params, prot, 1,1/4);% Simulate the dynamics and recover the fluoresence over time               
+        cal_params.ext_rate = 292.3/4;                                     % 
+        cal_params.t_on     = 0.8535;
+        cal_params.t_off    = 98.6173;
+        cal_params.ca_amp   = 76.1251;     
+        [~,~,S_axon]  = calcium_dynamics(S_times, cal_params, prot);       % Simulate the dynamics and recover the fluoresence over time               
         S_axon        = S_axon(:,l_buff+1:end);                            % Remove buffering period
     case 'double'
         warning('The "double" method is not fully vetted: use at your own risk.')
@@ -366,6 +346,9 @@ if spike_opts.N_bg>0                                                       % If 
             cal_params.sat_type = 'Ca_DE';                                 % Set the calcium dynamics to 'single' mode (simpler dynamics)
             cal_params.dt       = 1/100;                                   % Set the calcium dynamics framerate
             cal_params.ext_rate = 2800;                                    % Background needs an even higher extrusion rate
+            cal_params.t_on     = 3.1295;
+            cal_params.t_off    = 0.020137 ;
+            cal_params.ca_amp   = 130.917;
             [~,~,S_bg]  = calcium_dynamics(S_times, cal_params, prot);     % Simulate the dynamics and recover the fluoresence over time               
             S_bg        = S_bg(:,l_buff+1:end);                            % Remove buffering period
         case 'double'
@@ -425,43 +408,95 @@ if spike_opts.dt ~= 1/100                                                  % Onl
     end
 end
 
-if size(S.soma,2) > n_desired;     S.soma = S.soma(:,1:n_desired);   end   % If necessary, cut the sizes of the time courses down (for somas)
+if size(S.soma,2) > n_desired
+    S.soma = S.soma(:,1:n_desired);                                        % If necessary, cut the sizes of the time courses down (for somas)
+end
 
 if(~isempty(S.dend))
-    if size(S.dend,2) > n_desired; S.dend = S.dend(:,1:n_desired);   end   % If necessary, cut the sizes of the time courses down (for dendrites)
+    if size(S.dend,2) > n_desired
+        S.dend = S.dend(:,1:n_desired);                                        % If necessary, cut the sizes of the time courses down (for dendrites)
+    end
 end
 
 if spike_opts.N_bg > 0
-    if size(S.bg,2) > n_desired;   S.bg = 0.4*S.bg(:,1:n_desired);   end   % If necessary, cut the sizes of the time courses down (for background)  
-else
-    if size(S.bg,2) > n_desired;   S.bg = S.bg(:,1:n_desired);       end   % If necessary, cut the sizes of the time courses down (for background)  
+    if size(S.bg,2) > n_desired
+        S.bg = 0.4*S.bg(:,1:n_desired);                                    % If necessary, cut the sizes of the time courses down (for background)  
+    end
 end
 
 if(isempty(mod_vals))
-    mod_vals = expression_variation(size(S.soma,1), spike_opts.p_off, ...
-                                                      spike_opts.min_mod); % Create a set of modulatory factors for each cell
+    mod_vals = expression_variation(size(S.soma,1), spike_opts.p_off, spike_opts.min_mod);    % Create a set of modulatory factors for each cell
 end
 S.soma = bsxfun(@times, S.soma, mod_vals);                                 % Modulate the activity of each cell's soma
-if(~isempty(S.dend)); S.dend = bsxfun(@times, S.dend, mod_vals);  end      % Modulate the activity of each cell's dendrites
 
-if ~isempty(S.bg);    S.bg = bsxfun(@times, S.bg, mod_vals);               % Modulate the activity of each cell's dendrites
-else;                 S.bg = S.dend;
+if(~isempty(S.dend))
+    S.dend = bsxfun(@times, S.dend, mod_vals);                             % Modulate the activity of each cell's dendrites
+end
+if spike_opts.N_bg > 0
+    S.bg = expression_variation(S.bg, 0, 0.8);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Output parsing 
 
-if nargout == 1
-    varargout{1} = S;                                                      % If only one output: just return the fluorescence traces
-elseif nargout == 2
-    varargout{1} = S;                                                      % If two outputs: return the fluorescence traces...
-    varargout{2} = spikes;                                                 % ... and the spiking activity
-else
-    varargout{1} = S;                                                      % If more than two outputs: return the fluorescence traces...
-    varargout{2} = spikes;                                                 % ... and the spiking activity...
-    varargout{3} = mod_vals;                                               % ... and the modulation values
-end
-end
+% if nargout == 1
+%     varargout{1} = S;                                                      % If only one output: just return the fluorescence traces
+% elseif nargout == 2
+spikes.bg = sparse(spikes.bg);
+spikes.somas = sparse(spikes.somas);
 
+save(sprintf('%s\\S.mat', outdir), 'S')     % return the fluorescence traces
+save(sprintf('%s\\spikes.mat', outdir), 'spikes')  % ... and the spiking activity
+save(sprintf('%s\\spikes_opts.mat', outdir), 'spike_opts')                                          
+
+figure, imagesc(S.soma(:, : )), saveas(gca, sprintf('%s\\figure of soma', outdir)), title('soma')
+figure, imagesc(S.bg(:, : )), saveas(gca, sprintf('%s\\figure of bg', outdir)), title('bg')
+figure, imagesc(S.dend(:, : )), saveas(gca, sprintf('%s\\figure of dend', outdir)), title('dendrites')
+
+%% detailed plot
+ts = zscore(S.soma(1 : 200, : ), 0, 2);
+% ts = zscore(global_T_deconv_filtered( 10500 : 10550, 1 : end) , 0, 2);
+for i = 1 : size(ts, 1)
+    ts(i, :) = smooth(ts(i, :).', 3);
+end
+y_shift = 2;
+clip = false;
+% rng(10021)
+sel = 1:size(ts,1);
+
+nixs = 1:size(ts,1);
+sel_nixs = nixs(sel);
+
+figure('Position', [100, 100, 600, 800]);
+title(['Temporal activity' ' - timeseries, z-scored'], 'Interpreter', 'none');
+hold on
+for n_ix = 1:numel(sel_nixs)
+    ax = gca();
+    ax.ColorOrderIndex = 1;
+    loop_ts = ts(sel_nixs(n_ix),:);
+    if clip
+        loop_ts(loop_ts > 3*y_shift) = y_shift;
+        loop_ts(loop_ts < -3*y_shift) = -y_shift;
+    end
+    t = (0:size(ts,2)-1);
+    if max(loop_ts) - mean(loop_ts) > 1 * y_shift
+        
+        plot1 = plot(t, squeeze(loop_ts) + y_shift*(n_ix-1), 'color', 'k');
+        plot1.Color(4) = 0.5;
+    else
+        % with alpha
+        plot1 = plot(t, squeeze(loop_ts) + y_shift*(n_ix-1), 'b');
+        plot1.Color(4) = 0.3;
+    end
+    
+%     text(30, y_shift*(n_ix-1), num2str(sel_nixs(n_ix)));
+end
+xlabel('Frame');
+xlim([min(t) max(t)]);
+axis off
+hold off;
+axis tight;
+set(gca,'LooseInset',get(gca,'TightInset'))
+saveas(gca, sprintf('%s\\stack_trace_1_100_soma.png', outdir))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

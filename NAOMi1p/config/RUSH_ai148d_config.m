@@ -47,8 +47,8 @@ spike_opts.nt = spike_opts.nt  + 200;
 frate = 10;
 spike_opts.dt = 1/frate;   % frame rate
 spike_opts.rate  = 1e-3; % 0.25 for hawk, and 1e-3 for others
-spike_opts.smod_flag = 'hawke'; 
-
+spike_opts.smod_flag = 'Ca_DE'; 
+spike_opts.p_off = -1;
 %% widefield system parameters
 wdm_params.lambda = 0.532; % emission wavelength
 wdm_params.pavg = 0.5;                                                 % power in units of mW, for whole FOV

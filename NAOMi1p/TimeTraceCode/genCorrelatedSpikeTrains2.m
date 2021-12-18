@@ -35,7 +35,6 @@ if nargin > 3
 else
     discrete_flag = true;                                                  % Default to running the faster, less exact, discrete approximation of teh hawkes process
 end
-if isempty(discrete_flag); discrete_flag = true; end                       % Default to running the faster, less exact, discrete approximation of teh hawkes process
 
 if nargin > 4
     verbose = varargin{4};

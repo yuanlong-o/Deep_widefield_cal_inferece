@@ -44,9 +44,9 @@ end
 %   cal_params.ca_amp    = 130.917;                                       % Somas needs an even higher extrusion rate
 % end
 
-% if (~isfield(cal_params,'ext_rate'))||isempty(cal_params.ext_rate)         % Default extrusion rate
-%     cal_params.ext_rate = 265.73;                                          % Default for mouse layer 2/3: from Helmchen & Tank 2011 
-% end
+if (~isfield(cal_params,'ext_rate'))||isempty(cal_params.ext_rate)         % Default extrusion rate
+    cal_params.ext_rate = 265.73;                                          % Default for mouse layer 2/3: from Helmchen & Tank 2011 
+end
 
 if (~isfield(cal_params,'ca_bind'))||isempty(cal_params.ca_bind)           % Default calcium binding ratio
     cal_params.ca_bind = 110;                                              % Default for mouse layer 2/3: from Helmchen & Tank 2011
@@ -90,42 +90,38 @@ end
 %% Double exponential parameters for ca + double exp simulation
 
 if (~isfield(cal_params,'ca_amp'))||isempty(cal_params.ca_amp)             % Default Amplitude of 1
-    switch lower(prot_type)                                                % First calculate the dF/F curve (as in Badura et al.)
-        case {'gcamp6','gcamp6f'};    cal_params.ca_amp = 76.1251;         % Fit using data from Chen et al. 2013
-        case 'gcamp6s';               cal_params.ca_amp = 54.6943;         % Fit using data from Chen et al. 2013
-        case 'gcamp7';                cal_params.ca_amp = 230.917;         
-        case 'gcamp3';                cal_params.ca_amp = 0.05;            
-        otherwise;                    cal_params.ca_amp = 76.1251;         % Fit using data from Chen et al. 2013
+    switch prot_type                                                       % First calculate the dF/F curve (as in Badura et al.)
+        case {'GCaMP6','gcamp6'}
+            cal_params.ca_amp = 130.917;
+        case {'GCaMP7','gcamp7'}
+            cal_params.ca_amp = 230.917;
+        case {'GCaMP3','gcamp3'}
+            cal_params.ca_amp = 0.05;
+        otherwise
     end
 end
 if (~isfield(cal_params,'t_on'))||isempty(cal_params.t_on)                 % Default on rate of 0.1
-    switch lower(prot_type)                                                % First calculate the dF/F curve (as in Badura et al.)
-        case {'gcamp6','gcamp6f'};    cal_params.t_on = 0.8535;            % Fit using data from Chen et al. 2013
-        case 'gcamp6s';               cal_params.t_on = 0.4526;            % Fit using data from Chen et al. 2013
-        case 'gcamp7';                cal_params.t_on = 0.020137;
-        case 'gcamp3';                cal_params.t_on = 1;
-        otherwise;                    cal_params.t_on = 0.8535;            % Fit using data from Chen et al. 2013
+    switch prot_type                                                       % First calculate the dF/F curve (as in Badura et al.)
+        case {'GCaMP6','gcamp6'}
+            cal_params.t_on = 3.1295;
+        case {'GCaMP7','gcamp7'}
+            cal_params.t_on = 3.1295;
+        case {'GCaMP3','gcamp3'}
+            cal_params.t_on = 1;
+        otherwise
     end
 end
 if (~isfield(cal_params,'t_off'))||isempty(cal_params.t_off)               % Default off rate of 1
-    switch lower(prot_type)                                                % First calculate the dF/F curve (as in Badura et al.)
-        case {'gcamp6','gcamp6f'};    cal_params.t_off = 98.6173;          % Fit using data from Chen et al. 2013
-        case 'gcamp6s';               cal_params.t_off = 68.5461;          % Fit using data from Chen et al. 2013
-        case 'gcamp7';                cal_params.t_off = 3.1295;
-        case 'gcamp3';                cal_params.t_off = 1;
-        otherwise;                    cal_params.t_off = 98.6173;          % Fit using data from Chen et al. 2013
+    switch prot_type                                                       % First calculate the dF/F curve (as in Badura et al.)
+        case {'GCaMP6','gcamp6'}
+            cal_params.t_off = 0.020137;
+        case {'GCaMP7','gcamp7'}
+            cal_params.t_off = 0.020137;
+        case {'GCaMP3','gcamp3'}
+            cal_params.t_off = 1;
+        otherwise
     end
 end
-if (~isfield(cal_params,'ext_rate'))||isempty(cal_params.ext_rate)         % extrusion parameter
-    switch lower(prot_type)                                                % First calculate the dF/F curve (as in Badura et al.)
-        case {'gcamp6','gcamp6f'};    cal_params.ext_rate = 292.3;         % Fit using data from Chen et al. 2013
-        case 'gcamp6s';               cal_params.ext_rate = 299.0833;      % Fit using data from Chen et al. 2013
-        case 'gcamp7';                cal_params.ext_rate = 265.73;        % Default for mouse layer 2/3: from Helmchen & Tank 2011 
-        case 'gcamp3';                cal_params.ext_rate = 265.73;        % Default for mouse layer 2/3: from Helmchen & Tank 2011 
-        otherwise;                    cal_params.ext_rate = 265.73;        % Default for mouse layer 2/3: from Helmchen & Tank 2011 
-    end
-end
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
