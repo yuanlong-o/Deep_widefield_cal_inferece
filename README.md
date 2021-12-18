@@ -19,7 +19,7 @@ This tutorial will show how DeepWonder removes backgrounds in  widefield capture
 * Pytorch >= 1.3.1
 * NVIDIA GPU (24 GB Memory) + CUDA
 
-### Environment configuration
+### 🛠 Environment configuration
 * Create a virtual environment and install Pytorch. In the 4th step, please select the correct Pytorch version that matches your CUDA version from https://pytorch.org/get-started/previous-versions/
 ```
 $ conda create -n deepwonder python=3.6
