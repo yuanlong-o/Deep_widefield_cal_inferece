@@ -41,7 +41,7 @@ $ conda create -n deepwonder_env python=3.6
 $ source activate deepwonder_env
 $ pip install -q torch==1.10.0
 $ pip install -q torchvision==0.8.2
-$ pip install deepwonder==0.3
+$ pip install deepwonder==0.4
 $ pip install -q opencv-python==4.1.2.30
 $ pip install -q tifffile  
 $ pip install -q scikit-image==0.17.2
