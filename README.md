@@ -2,7 +2,7 @@
 <img src="img/deepwonder_logo.png" width="800" align="center">
 Implementation for deep widefield neuron finder (DeepWonder)
 
-![Imaging modality](https://img.shields.io/badge/Imaging%20modality-Wide--filed%20SIngle--photon-brightgreen)![Purpose](https://img.shields.io/badge/Purpose-Neuron%20analysis-orange)![Datasets](https://img.shields.io/badge/Datasets-Synthetic%20biological%20images-blue)
+![Imaging modality](https://img.shields.io/badge/Imaging%20modality-Wide--filed%20SIngle--photon-brightgreen)  ![Purpose](https://img.shields.io/badge/Purpose-Neuron%20analysis-orange)  ![Datasets](https://img.shields.io/badge/Datasets-Synthetic%20biological%20images-blue)
 
 ## 📋 Table of content
  1. [Overview](#Overview)
