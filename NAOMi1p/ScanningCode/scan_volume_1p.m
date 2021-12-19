@@ -309,25 +309,26 @@ median_bg= median(bg_act_max);
 
 
 % background dendirites
-for ll = 1:size(bg_act,1) % for neuron number
-    buf = bg_act(ll,:) +median_bg * 0.2;
-    if max(buf) > 0
-        bg_act(ll,:) = buf / max(buf(:)) * bg_act_max(ll);
-    end
-end
+% for ll = 1:size(bg_act,1) % for neuron number
+%     buf = bg_act(ll,:) +median_bg * 0.2;
+%     if max(buf) > 0
+%         bg_act(ll,:) = buf / max(buf(:)) * bg_act_max(ll);
+%     end
+% end
 
 
 % % dendrites
 for ll = 1:size(dend_act,1) % for neuron number
     buf = dend_act(ll,:) + max(dend_max);
     if max(buf) > 0
-        dend_act(ll,:) = buf / max(buf(:)) * median_soma * 1e-3;
+        dend_act(ll,:) = buf / max(buf(:)) * median_soma * 1e-2;
     end
 end
+
+% disable apical dendrites
 dend_act(vol_params.N_neur + 1 : vol_params.N_neur + vol_params.N_den, :) = 0;
 % statistics
 max(soma_act(:))
-
 max(bg_act(:))
 max(dend_act(:))
 
@@ -438,6 +439,8 @@ if ~isstruct(PSF)
         clear TMPvol; 
         %% add volumes
         WMPvol_w_bg = zeros(N1,N2,N3,'single');                                 % Reset the temporary volume - It's an order of magnitde faster to scrap and start over                                                
+        WMPvol_w_bg_pure = zeros(N1,N2,N3,'single');
+        
         for ll = 1:size(soma_act,1)                                        % For large volumes, mex functions decrease runtimes a lot
             if(soma_act(ll,kk)>0)&&(~isempty(somaVol{ll,2}))
                 array_SubSubTest(WMPvol_w_bg,somaVol{ll,1},...
@@ -455,6 +458,8 @@ if ~isstruct(PSF)
                 if(nuc_act(ll,kk)>0)&&(~isempty(nucVol{ll,2}))
                     array_SubSubTest(WMPvol_w_bg,nucVol{ll,1},...
                                         nucVol{ll,2},nuc_act(ll,kk));    % Iteratively add in each neuron's soma activity
+                    array_SubSubTest(WMPvol_w_bg_pure,nucVol{ll,1},...
+                                        nucVol{ll,2},nuc_act(ll,kk));    % Iteratively add in each neuron's soma activity                
                 end            
             end
         end
@@ -464,14 +469,18 @@ if ~isstruct(PSF)
             if (dend_act(ll,kk)>0)&&(~isempty(dendVol{ll,1}))
                 array_SubSubTest(WMPvol_w_bg,dendVol{ll,1},...
                                            dendVol{ll,2},dend_act(ll,kk)); % Iteratively add in each neuron's soma activity
+                array_SubSubTest(WMPvol_w_bg_pure,dendVol{ll,1},...
+                                           dendVol{ll,2},dend_act(ll,kk)); % Iteratively add in each neuron's soma activity
             end
         end
         
         % bg
         for ll = 1:size(bg_act,1)
             if(~isempty(axonVol{ll,1}) && bg_act(ll,kk)>0)
-                array_SubModTest(WMPvol_w_bg, axonVol{ll,1}, ...
+                array_SubModTest(WMPvol_w_bg_pure, axonVol{ll,1}, ...
                                            axonVol{ll,2},bg_act(ll,kk )); % Iteratively add in each background component's activity
+                array_SubSubTest(WMPvol_w_bg_pure,dendVol{ll,1},...
+                                           dendVol{ll,2},dend_act(ll,kk)); % Iteratively add in each neuron's soma activity
             end
         end
         
@@ -502,26 +511,24 @@ if ~isstruct(PSF)
             % top image
             if(isempty(1:z_loc-1))
                 % so the top img is still based on the whole volume
-                top_img = blurredBackComp2(WMPvol_w_bg,1:size(WMPvol_w_bg,3),...
+                top_img = blurredBackComp2(WMPvol_w_bg_pure,1:size(WMPvol_w_bg_pure,3),...
                            psfT.freq_psf,psfT.weight, top_mask, 1, [], f0vol);          
             else
-                top_img = blurredBackComp2(WMPvol_w_bg,1:z_loc-1,psfT.freq_psf,...
+                top_img = blurredBackComp2(WMPvol_w_bg_pure,1:z_loc-1,psfT.freq_psf,...
                                          psfT.weight, top_mask, 1, psfT.psfZ, f0vol);
             end
-            if(isempty(z_loc+Np3:size(WMPvol_w_bg,3)))
-                bot_img = blurredBackComp2(WMPvol_w_bg,1:size(WMPvol_w_bg,3),...
+            if(isempty(z_loc+Np3:size(WMPvol_w_bg_pure,3)))
+                bot_img = blurredBackComp2(WMPvol_w_bg_pure,1:size(WMPvol_w_bg_pure,3),...
                            psfB.freq_psf,psfB.weight, bot_mask, 1, [], f0vol);                      
             else
-                bot_img = blurredBackComp2(WMPvol_w_bg,z_loc+Np3:size(WMPvol_w_bg,3),...
+                bot_img = blurredBackComp2(WMPvol_w_bg_pure,z_loc+Np3:size(WMPvol_w_bg_pure,3),...
                            psfB.freq_psf,psfB.weight, bot_mask, 1, psfB.psfZ, f0vol);            
             end
             top_img = top_img*(sigscale/(sfrac^2));
             bot_img = bot_img*(sigscale/(sfrac^2));
                
             clean_img_w_bg = clean_img_w_bg + bot_img * 0.1+ top_img * 0.1;
-            clean_img_w_bg = clean_img_w_bg + ...
-                                            imfilter(bot_img, round(20 / vol_params.vres)) * 1e-3 + ...
-                                            imfilter(top_img, round(20 / vol_params.vres)) * 1e-3 ;
+
         end
         
         %% motions 

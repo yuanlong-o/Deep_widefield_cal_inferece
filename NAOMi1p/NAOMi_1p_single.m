@@ -16,7 +16,6 @@ RUSH_ai148d_config
 FOV_sz = 600;% FOV, um
 nt = 1000;  % frames
 fn = 10; % frame rate
-% exp_level = 10; % emperial value, for different expression level in different mice
 pavg = 0.5; %mW per mm^2
 
 

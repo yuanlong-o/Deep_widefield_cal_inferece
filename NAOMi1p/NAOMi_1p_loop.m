@@ -12,9 +12,8 @@ RUSH_ai148d_config
 
 %% RUSH 148d config
 FOV_sz = 600;% FOV 600, mm
-nt = 300;  % 200 frames
+nt = 1000;  % frames
 fn = 10; % 10 Hz
-exp_level = 8; % emperial value, for different expression level in different mice
 pavg = 1; %mW per mm2
 
 

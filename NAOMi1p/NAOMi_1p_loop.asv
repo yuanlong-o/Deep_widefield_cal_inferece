@@ -12,16 +12,16 @@ RUSH_ai148d_config
 
 %% RUSH 148d config
 FOV_sz = 600;% FOV 600, mm
-nt = 1000;  % 200 frames
+nt = 300;  % 200 frames
 fn = 10; % 10 Hz
-exp_level = 1; % emperial value, for different expression level in different mice
+exp_level = 10; % emperial value, for different expression level in different mice
 pavg = 1; %mW per mm2
 
 
 %% parser
 vol_params.vol_sz(1) = FOV_sz;
 vol_params.vol_sz(2) = FOV_sz;
-spike_opts.nt = nt + 200;
+spike_opts.nt = nt + 100;
 spike_opts.dt = 1 / fn;
 wdm_params.pavg = pavg;
 
@@ -76,10 +76,13 @@ for kkk = 1 : 5
 
     %% generate neurons
     tic                                           
-fun_time_trace_generation(vol_out, nt, fn, output_dir)
-fprintf('Simulated temporal activity in %f seconds.\n', toc); 
+    fun_time_trace_generation(vol_out, nt, fn, output_dir)
+    fprintf('Simulated temporal activity in %f seconds.\n', toc); 
 
     %% plot traces
+	spike_opts = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\spikes_opts.mat', output_dir));
+    neur_act = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\S.mat', output_dir));
+
     figure('position', [100, 100, 400, 800]), imagesc(neur_act.soma(:, : )),  title('soma'), colormap(othercolor('BuGn7'))
     saveas(gcf, sprintf('%s\\soma_heat.jpg', output_dir)), close
     figure('position', [100, 100, 400, 800]), imagesc(neur_act.bg(:, : )),  title('bg'), colormap(othercolor('BuGn7'))
@@ -87,20 +90,13 @@ fprintf('Simulated temporal activity in %f seconds.\n', toc);
     figure('position', [100, 100, 400, 800]), imagesc(neur_act.dend(:, : )), title('dendrites'), colormap(othercolor('BuGn7'))
     saveas(gcf, sprintf('%s\\dend_heat.jpg', output_dir)), close
 
-    figure('position', [100, 100, 400, 800]), temporal_trace_render(neur_act.soma, 'k'), title('soma')
-    saveas(gcf, sprintf('%s\\soma.jpg', output_dir)),close
-    figure('position', [100, 100, 400, 800]), temporal_trace_render(neur_act.bg, 'k'), title('bg')
-    saveas(gcf, sprintf('%s\\bg.jpg', output_dir)),close
-    figure('position', [100, 100, 400, 800]), temporal_trace_render(neur_act.dend, 'k'), title('dendrites')
-    saveas(gcf, sprintf('%s\\dend.jpg', output_dir)),close
+
 
     %% peform imaging  
-    spike_opts = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\spikes_opts.mat', output_dir));
-    neur_act = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\S.mat', output_dir));
 
     clc
     scan_volume_1p(vol_out, PSF_struct, neur_act, ...
-                           vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, 1, output_dir); % Perform the scanning simulation
+                           vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
 
 
 

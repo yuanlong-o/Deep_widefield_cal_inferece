@@ -294,7 +294,7 @@ for ll = 1:size(soma_act,1) % for neuron number
 end
 
 % disable apical dendrites
-dend_act(vol_params.N_neur + 1 : vol_params.N_neur + vol_params.N_den, :) = 0;
+
 %% reduce the variance of background fluctuations
 % min activity
 % 
@@ -309,25 +309,26 @@ median_bg= median(bg_act_max);
 
 
 % background dendirites
-% for ll = 1:size(bg_act,1) % for neuron number
-%     buf = bg_act(ll,:) +median_bg;
-%     if max(buf) > 0
-%         bg_act(ll,:) = buf / max(buf(:)) * bg_act_max(ll);
-%     end
-% end
+for ll = 1:size(bg_act,1) % for neuron number
+    buf = bg_act(ll,:) +median_bg * 0.2;
+    if max(buf) > 0
+        bg_act(ll,:) = buf / max(buf(:)) * bg_act_max(ll);
+    end
+end
 
 
 % % dendrites
 for ll = 1:size(dend_act,1) % for neuron number
     buf = dend_act(ll,:) + max(dend_max);
     if max(buf) > 0
-        dend_act(ll,:) = buf / max(buf(:)) * median_soma * 0.02;
+        dend_act(ll,:) = buf / max(buf(:)) * median_soma * 1e-3;
     end
 end
 
+% disable apical dendrites
+dend_act(vol_params.N_neur + 1 : vol_params.N_neur + vol_params.N_den, :) = 0;
 % statistics
 max(soma_act(:))
-
 max(bg_act(:))
 max(dend_act(:))
 
@@ -438,6 +439,7 @@ if ~isstruct(PSF)
         clear TMPvol; 
         %% add volumes
         WMPvol_w_bg = zeros(N1,N2,N3,'single');                                 % Reset the temporary volume - It's an order of magnitde faster to scrap and start over                                                
+        WMPvol_w_bg_pure = zeros(N1,N2,N3,'single');
         for ll = 1:size(soma_act,1)                                        % For large volumes, mex functions decrease runtimes a lot
             if(soma_act(ll,kk)>0)&&(~isempty(somaVol{ll,2}))
                 array_SubSubTest(WMPvol_w_bg,somaVol{ll,1},...
@@ -518,7 +520,7 @@ if ~isstruct(PSF)
             top_img = top_img*(sigscale/(sfrac^2));
             bot_img = bot_img*(sigscale/(sfrac^2));
                
-            clean_img_w_bg = clean_img_w_bg + bot_img * 0.1+ top_img * 0.1;
+            clean_img_w_bg = clean_img_w_bg + bot_img * 0.05+ top_img * 0.05;
             clean_img_w_bg = clean_img_w_bg + ...
                                             imfilter(bot_img, round(20 / vol_params.vres)) * 1e-3 + ...
                                             imfilter(top_img, round(20 / vol_params.vres)) * 1e-3 ;
@@ -545,6 +547,7 @@ if ~isstruct(PSF)
         
         % debug mode
         saveastiff(im2uint16(samp_img / 65535), sprintf('%s\\debug\\%d.tiff', output_dir, kk - start_Nt))
+        saveastiff(im2uint16(clean_img_wo_bg / 65535), sprintf('%s\\debug_gt\\%d.tiff', output_dir, kk - start_Nt))
         %% saving tiff, optional for large files
         if (~isempty(scan_params.fsimPath))
             tifLinkFsim = tifappend(tifLinkFsim,samp_img,tagFsim, ...
