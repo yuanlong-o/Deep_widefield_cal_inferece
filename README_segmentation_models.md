@@ -5,6 +5,7 @@
 Segmentation based on [PyTorch](https://pytorch.org/).**  
 
 ![PyPI version](https://badge.fury.io/py/segmentation-models-pytorch.svg) [![Build Status](https://travis-ci.com/qubvel/segmentation_models.pytorch.svg?branch=master)](https://travis-ci.com/qubvel/segmentation_models.pytorch) [![Documentation Status](https://readthedocs.org/projects/smp/badge/?version=latest)](https://smp.readthedocs.io/en/latest/?badge=latest) <br> ![Downloads](https://pepy.tech/badge/segmentation-models-pytorch) [![Generic badge](https://img.shields.io/badge/License-MIT-<COLOR>.svg)](https://shields.io/)
+ [![Imaging modality](https://https://img.shields.io/badge/Wide%20field-SIngle%20photon-brightgreen)
 
 </div>
 
