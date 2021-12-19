@@ -1,6 +1,7 @@
 # Deep widefield neuron finder (DeepWonder)
 <img src="img/deepwonder_logo.png" width="400" align="center">
 Implementation for deep widefield neuron finder (DeepWonder)
+![PyPI version](https://badge.fury.io/py/segmentation-models-pytorch.svg)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cluMDiY0G0NR4j62OkhOd8Cs316EbuDc?usp=sharing)
 ## Overview
 Widefield imaging provides optical access to multi-millimeter fields of view in video rate, but cell-resolved calcium imaging has mostly contaminated by tissue scattering and calcium inference suffers multiple times slower processing speed than two-photon microscope in the same scale. We present a deep widefield neuron finder (DeepWonder), which is fueled by numerical recordings but effectively works on experimental data with an order of magnitude of speed improvement and improved precision and accuracy. With DeepWonder, widefield calcium recordings can be quickly converted into background-free movies, and neuronal segments and activites then be demixed out. For more details and results, please see our companion paper at TODO.
