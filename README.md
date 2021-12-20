@@ -54,7 +54,7 @@ $ pip install -q sklearn==0.0
 $ git clone git://github.com/cabooster/Deep_widefield_cal_inferece
 $ cd DeepCAD/DeepWonder/
 ```
-We upload three demo data on Google drive: [synthetic wide field data by naomi1p code ](https://drive.google.com/drive/folders/1WiTrL5gRuMUssMYt2uDRDO-5pmmrdNSc?usp=sharing), [Rush data](https://drive.google.com/drive/folders/1CP6CuAmOkAx_hoAhT4h-Pd1o_FTcva9M?usp=sharing) and [ordinary wide field data](https://drive.google.com/drive/folders/1QSqbNWmZTlbctYt0Vh0I529gt-kYNX4w?usp=sharing). You can download them and put them in the *DeepWonder/datasets* folder.
+We upload three demo data on Google drive: [synthetic widefield data by naomi1p code ](https://drive.google.com/drive/folders/1WiTrL5gRuMUssMYt2uDRDO-5pmmrdNSc?usp=sharing), [Rush data](https://drive.google.com/drive/folders/1CP6CuAmOkAx_hoAhT4h-Pd1o_FTcva9M?usp=sharing) and [ordinary widefield data bu RUSH system](https://drive.google.com/drive/folders/1QSqbNWmZTlbctYt0Vh0I529gt-kYNX4w?usp=sharing). You can download them and put them in the *DeepWonder/datasets* folder.
 ### **💡** Run the trained model <a name="Run"></a>
 Run the script.py to analyze the demo data. 
 ```
