@@ -7,7 +7,6 @@ close all
 %% add path
 installNAOMi1p
 
-
 %% load pre-defined data
 % pre-defined configuration file for RUSH
 RUSH_ai148d_config
@@ -88,8 +87,7 @@ figure('position', [100, 100, 400, 800]), imagesc(neur_act.dend(:, : )), title('
 saveas(gcf, sprintf('%s\\dend_heat.jpg', output_dir)), close
 
 %% peform imaging    
-clc
-% 
+tic  
 % vol_out = importdata(sprintf('%s\\vol_out.mat', output_dir));
 % PSF_struct = importdata(sprintf('%s\\PSF_struct.mat',output_dir));     
 spike_opts = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\spikes_opts.mat', output_dir));
@@ -98,6 +96,6 @@ neur_act = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\S.mat', ou
 exp_level = 5;
 scan_volume_1p(vol_out, PSF_struct, neur_act, ...
                        vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
-
+fprintf('Simulated recordings in %f seconds.\n', toc); 
 
 

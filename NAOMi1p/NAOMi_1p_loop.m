@@ -91,12 +91,11 @@ for kkk = 1 : 5
 
 
 
-    %% peform imaging  
-
-    clc
+    %% peform imaging 
+    toc
     scan_volume_1p(vol_out, PSF_struct, neur_act, ...
                            vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
-
+    fprintf('Simulated recordings in %f seconds.\n', toc); 
 
 
 end

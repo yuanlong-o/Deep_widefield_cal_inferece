@@ -1,10 +1,10 @@
 %% RUSH configuration
 
-vol_params.vol_sz    = [300,300,150];   % Volume size to sample (in microns)
+vol_params.vol_sz    = [600,600,150];   % Volume size to sample (in microns)
 vol_params.vol_depth = 50;  % Set the depth of imaging (depth at the middle of the simulated volume)
 vol_params.neur_density = 3e4;
-pixel_size = 0.8; % your system pixel size
-vol_params.vres         = ceil(pixel_size);  % pixel size
+pixel_size = 0.8;           % pixel size of your system 
+vol_params.vres         = 1; % pixel size in tissue simulations
 neur_params.avg_rad     = 1*5.9;  % for slightly larger neuron
 
 
@@ -14,8 +14,8 @@ M = 10; % system magnification
 
 obj_immersion = 'air'; % or 'water'
 psf_params.obj_fl = FN / M;
-psf_params.objNA     = 0.3;  % emission NA
-psf_params.NA        = 0.3;  % excitation NA
+psf_params.objNA     = 0.35;  % emission NA
+psf_params.NA        = 0.35;  % excitation NA
 psf_params.lambda = 0.488; % excitation wavelength
 
 if strcmp(obj_immersion, 'water')
@@ -35,7 +35,7 @@ psf_params.psf_sz = [36, 36, 100];
 
 %% widefield system parameters
 spike_opts.prot = 'GCaMP6';
-mode = 'w_dend'; % choose the simulation to be with dendrites or noe
+mode = 'w_dend'; % choose the simulation to be with dendrites or not
 if strcmp(mode, 'w_dend')
     spike_opts.dendflag = 1; % if the data is soma confined, set it to be 0;
 elseif strcmp(mode, 'wo_dend')
@@ -43,15 +43,15 @@ elseif strcmp(mode, 'wo_dend')
 end
 
 spike_opts.nt = 1000;                                              % Set number of time step
-spike_opts.nt = spike_opts.nt  + 200;
+spike_opts.nt = spike_opts.nt  + 100;                              % throw away start 100 frames
 frate = 10;
 spike_opts.dt = 1/frate;   % frame rate
 spike_opts.rate  = 1e-3; % 0.25 for hawk, and 1e-3 for others
-spike_opts.smod_flag = 'Ca_DE'; 
+spike_opts.smod_flag = 'Ca_DE';  %  hawk or Ca_DE
 spike_opts.p_off = -1;
 %% widefield system parameters
 wdm_params.lambda = 0.532; % emission wavelength
-wdm_params.pavg = 0.5;                                                 % power in units of mW, for whole FOV
+wdm_params.pavg = 1;                                                 % power in units of mW, for whole FOV
 wdm_params.qe  = 0.7; % sensor QE
 exp_level = 5; % control the brightness of neurons 
 
