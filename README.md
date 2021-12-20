@@ -54,45 +54,50 @@ $ pip install -q sklearn==0.0
 $ git clone git://github.com/cabooster/Deep_widefield_cal_inferece
 $ cd DeepCAD/DeepWonder/
 ```
-We upload three demo data on Google drive: [synthetic widefield data by naomi1p code ](https://drive.google.com/drive/folders/1WiTrL5gRuMUssMYt2uDRDO-5pmmrdNSc?usp=sharing), [Rush data](https://drive.google.com/drive/folders/1CP6CuAmOkAx_hoAhT4h-Pd1o_FTcva9M?usp=sharing) and [ordinary widefield data bu RUSH system](https://drive.google.com/drive/folders/1QSqbNWmZTlbctYt0Vh0I529gt-kYNX4w?usp=sharing). You can download them and put them in the *DeepWonder/datasets* folder.
+We upload three demo data on Google drive: [synthetic widefield data by NAOMi1p code ](https://drive.google.com/drive/folders/1WiTrL5gRuMUssMYt2uDRDO-5pmmrdNSc?usp=sharing), [cropped RUSH data](https://drive.google.com/drive/folders/1CP6CuAmOkAx_hoAhT4h-Pd1o_FTcva9M?usp=sharing) and [widefield data jointly with two-photon ground truth](https://drive.google.com/drive/folders/1QSqbNWmZTlbctYt0Vh0I529gt-kYNX4w?usp=sharing). To run the demoscript, those data need to be downloaded  and put into the *DeepWonder/datasets* folder.
 ### **💡** Run the trained model <a name="Run"></a>
 Run the script.py to analyze the demo data. 
 ```
 $ python script.py 
 ```
-You can get the result in the *DeepWonder/results* folder. The removing background result is in the *DeepWonder/results/XXXX/RMBG* folder. The neuron footprints id in the *DeepWonder/results/XXXX/f_con* folder as a *.tif* file and the *DeepWonder/results/XXXX/mat folder* as a *.mat* file.
+The outpout from the demo script can be found in the *DeepWonder/results* folder. For example, the background removed movie is in the *DeepWonder/results/XXXX/RMBG* folder, the neuron footprint masks are in the *DeepWonder/results/XXXX/f_con* folder which are stored in a *.tif* file, and the activities are in the *DeepWonder/results/XXXX/mat*  folder as a *.mat* file.
 ### **💡** Work for your own data <a name="Owndata"></a>
-Because we trained our network on the synthetic data whose pixel size is *0.8 um*, we should first resize your data to *0.8 um* one pixel. Then put your data in the *DeepWonder/datasets* folder and use DeepWonder as described above.
+Since the uploaded pretrained DeepWonder was trained on the synthetic data from NAOMi1p (see following instructions) under RUSH modalities (the specific parameters are in NAOMi1p\config\RUSH_ai148d_config.m) which might be different from your acquisition specifications, it is highly recommened to follow the re-train instructions downbelow to get the best performances. As an alternative option, new data can be resized into *0.8 um* pixel size to mimic the modality in the pretrain situation and put in the *DeepWonder/datasets* folder. After that,  DeepWonder is ready to go as suggested previously.
+
 ### **💡** Run Demo data with Google Colab <a name="Colab"></a>
-We have stored our data in Google Colab, which is a free Jupyter notebook environment that requires no setup and runs entirely in the cloud. A demo script with full processing of DeepWonder on several demo datasets (including NAOMi1p virtual datasets, cropped RUSH datasets, and two-photon validation datasets, all mounted to the Google Colab using Google Drive) is available through Colab via 
+We have stored our data in Google Colab, which is a free Jupyter notebook environment that requires no setup and runs entirely in the cloud. A demo notebook with full processing of DeepWonder on several demo datasets (including NAOMi1p virtual datasets, cropped RUSH datasets, and two-photon validation datasets, all mounted to the Google Colab using Google Drive) is available through Colab via 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cluMDiY0G0NR4j62OkhOd8Cs316EbuDc?usp=sharing).
-You can process your data with the on-line DeepWonder guide by the tutorial.
+By copying that notebook to your online server (like Colab), you can also process linked data in online fashion.
+
 ## **🔁** Train DeepWonder <a name="Train"></a>
+
 ### **💡** Realistic widefield capture generation <a name="NAOMI"></a>
-DeepWonder relies on a highly realistic simulation of widefield capture for training a network that removes widefield background. We refered to the Neural Anatomy and Optical Microscopy (NAOMi) package (https://www.sciencedirect.com/science/article/pii/S0165027021001084) to populat the brain tissue with multiple blood vessels, somata, axons, and dendrites. We further modified the NAOMi pipeline such that it could faithfully simulate data acquisition of one-photon excitations with one-photon excitation model and related noise model, which we termed as NAOMi1p. The virtual widefield data by NAOMi1p can be affected by optical parameters, illumination powers, and other parameters like protein concentration. The full key parameters are listed as
+DeepWonder relies on a highly realistic simulation of widefield capture for training a network that removes widefield background. We refered to the Neural Anatomy and Optical Microscopy (NAOMi) package (https://www.sciencedirect.com/science/article/pii/S0165027021001084) to populate the brain tissue with multiple blood vessels, somata, axons, and dendrites. We further modified the NAOMi pipeline such that it could faithfully simulate data acquisition of one-photon excitations with one-photon excitation model and related noise model, which we termed as NAOMi1p. The virtual widefield data by NAOMi1p can be affected by optical parameters, illumination powers, and other parameters like protein concentration. The full key parameters are listed as
 1. Optical parameters of microscope: NA, FOV, FN, immersion medium
 2. Indicator parameters: expression level, indicator types (e.g. GCaMP6 or GCaMP7)
-3. Imaging parameters: session length, frame rate, illumination powers, imaging d
-  As an example, run NAOMi1p_widefield.m to generate a 750 x 750 x 1000 frame virtual widefield recording. You can adjust the above parameters based on your own system.
-### **💡** Background removal network training <a name="TrainBR"></a>
-Put the GT images generated by NAOMI1p code in the *DeepWonder/datasets/XXXX/GT* and the raw images generated by NAOMI1p code in the *DeepWonder/datasets/XXXX/Input*. To achieve that, run the script_train_RMBG.py to train the background removal network.
+3. Imaging parameters: session length, frame rate, illumination powers, and imaging depth
+All those parameters should be adjusted based on a specific system. As an example, run NAOMi_1p_single.m to generate a 750 x 750 x 1000 frame virtual widefield recording (mov_w_bg.tiff) along with a background free pair (mov_wo_bg.tiff). To generate multiple training pairs, run NAOMi_1p_loop.m which nests a for loop to generate data.
+
+
+### **💡** Train background removal network <a name="TrainBR"></a>
+Put the backagrond removed movie generated by NAOMI1p to the *DeepWonder/datasets/XXXX/GT* folder, and the paired background contaminated movie to the *DeepWonder/datasets/XXXX/Input* folder. After preparing the data, run the script_train_RMBG.py to train the background removal network.
 ```
 $ source activate deepwonder_env
 $ python script_train_RMBG.py train
 ```
-You will get trained removing background model in *DeepWonder/RMBG_pth* folder.
-### **💡** Neuron segmentation network training <a name="TrainNS"></a>
-You can establish a training datasets for segmentation: input data is the no-background data generated by NAOMI1p code and GT data is generated by biological modeling. Put the GT data in the *DeepWonder/datasets/XXXX/mask* and the raw data in the *DeepWonder/datasets/XXXX/image*. Run the script_train_SEG.py to train the neuron segmentation network.
+The trained removing background model will show up in *DeepWonder/RMBG_pth* folder.
 
+### **💡** Train neuron segmentation network <a name="TrainNS"></a>
+Put the backagrond removed movie generated to the *DeepWonder/datasets/XXXX/image* folder as inputs, and the corresponding segmented masks to the *DeepWonder/datasets/XXXX/mask* folder as labels. A good option to get the mask data is to binarizing simulate neurons for each of frames (individual neurons are in the vol_out structure from NAOMi1p output). Alternatively, running other two-photon segmentation tools (like CaImAn https://github.com/flatironinstitute/CaImAn) to get segments can also work but probably with performance dropping. Run the script_train_SEG.py to train the neuron segmentation network.
 ```
 $ source activate deepwonder_env
 $ python script_train_SEG.py train
 ```
-You will get trained Neuron segmentation model in *DeepWonder/SEG_pth* folder.
+The trained neuron segmentation model will show up in *DeepWonder/SEG_pth* folder.
+
 ## 🤝 Other information <a name="Information"></a>
 ### **📝** Citation <a name="Citation"></a>
 
 
-
 ### **📝** Email <a name="Email"></a>
-If you have any questions, you can send email to me zhanggx19@mails.tsinghua.edu.cn.
+We are pleased to address any questions regarding above tools through emails(zhanggx19@mails.tsinghua.edu.cn or ylzhang16@mails.tsinghua.edu.cn).
