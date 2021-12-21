@@ -77,6 +77,9 @@ saveastiff(im2uint16(PSF_struct.psfT.mask/ max(PSF_struct.psfT.mask, [], 'all'))
 tic                                    
 % [neur_act,spikes] = generateTimeTraces(spike_opts,[],vol_out.locs);        % Generate time traces using AR-2 process
 fun_time_trace_generation(vol_out, nt, fn, output_dir)
+spike_opts = importdata(sprintf('%s\\firing_rate_%g_smod_flag_other\\spikes_opts.mat', output_dir, spike_opts.rate));
+neur_act = importdata(sprintf('%s\\firing_rate_%g_smod_flag_other\\S.mat', output_dir, spike_opts.rate));
+
 fprintf('Simulated temporal activity in %f seconds.\n', toc); 
 %% plot traces
 figure('position', [100, 100, 400, 800]), imagesc(neur_act.soma(:, : )),  title('soma'), colormap(othercolor('BuGn7'))
@@ -90,10 +93,6 @@ saveas(gcf, sprintf('%s\\dend_heat.jpg', output_dir)), close
 tic  
 % vol_out = importdata(sprintf('%s\\vol_out.mat', output_dir));
 % PSF_struct = importdata(sprintf('%s\\PSF_struct.mat',output_dir));     
-spike_opts = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\spikes_opts.mat', output_dir));
-neur_act = importdata(sprintf('%s\\firing_rate_0.001_smod_flag_other\\S.mat', output_dir));
-
-exp_level = 5;
 scan_volume_1p(vol_out, PSF_struct, neur_act, ...
                        vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
 fprintf('Simulated recordings in %f seconds.\n', toc); 
