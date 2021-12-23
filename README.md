@@ -99,6 +99,6 @@ The trained neuron segmentation model will show up in *DeepWonder/SEG_pth* folde
 ## 🤝 Other information <a name="Information"></a>
 ### **📝** Citation <a name="Citation"></a>
 
-
+   
 ### **📝** Email <a name="Email"></a>
 We are pleased to address any questions regarding the above tools through emails (zhanggx19@mails.tsinghua.edu.cn or ylzhang16@mails.tsinghua.edu.cn).
