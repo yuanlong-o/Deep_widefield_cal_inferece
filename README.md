@@ -2,7 +2,7 @@
 <img src="img/deepwonder_logo.png" width="800" align="center">
 Implementation for deep widefield neuron finder (DeepWonder)
 
-![Imaging modality](https://img.shields.io/badge/Imaging%20modality-Wide--filed%20SIngle--photon-brightgreen)  ![Purpose](https://img.shields.io/badge/Purpose-Neuron%20analysis-orange)  ![Datasets](https://img.shields.io/badge/Datasets-Synthetic%20biological%20images-blue)
+![Imaging modality](https://img.shields.io/badge/Imaging%20modality-Wide--field%20Single--photon-brightgreen)  ![Purpose](https://img.shields.io/badge/Purpose-Neuron%20analysis-orange)  ![Datasets](https://img.shields.io/badge/Datasets-Synthetic%20calcium%20recordings-blue)
 
 ## 📋 Table of content
  1. [Overview](#Overview)
@@ -66,7 +66,7 @@ Since the uploaded pretrained DeepWonder was trained on the synthetic data from 
 
 ### **💡** Run Demo data with Google Colab <a name="Colab"></a>
 We have stored our data in Google Colab, which is a free Jupyter notebook environment that requires no setup and runs entirely in the cloud. A demo notebook with full processing of DeepWonder on several demo datasets (including NAOMi1p virtual datasets, cropped RUSH datasets, and two-photon validation datasets, all mounted to the Google Colab using Google Drive) is available through Colab via 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cluMDiY0G0NR4j62OkhOd8Cs316EbuDc?usp=sharing).
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/15TvsyEYgE1iGpaNWkq3flXOw52I51mVa/view?usp=sharing).
 By copying that notebook to your online server (like Colab), you can also process linked data in the online fashion.
 
 ## **🔁** Train DeepWonder <a name="Train"></a>
@@ -99,6 +99,6 @@ The trained neuron segmentation model will show up in *DeepWonder/SEG_pth* folde
 ## 🤝 Other information <a name="Information"></a>
 ### **📝** Citation <a name="Citation"></a>
 
-
+   
 ### **📝** Email <a name="Email"></a>
 We are pleased to address any questions regarding the above tools through emails (zhanggx19@mails.tsinghua.edu.cn or ylzhang16@mails.tsinghua.edu.cn).
