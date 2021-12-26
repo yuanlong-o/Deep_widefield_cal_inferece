@@ -14,9 +14,9 @@ from skimage import io
 
 import random
 
-from deepwonder.SEG.data_process import train_preprocess_lessMemory_seg, shuffle_datasets_lessMemory
-from deepwonder.SEG.network import SEG_Network_3D_Unet
-from deepwonder.SEG.utils import FFDrealign4, inv_FFDrealign4
+from DWonder.SEG.data_process import train_preprocess_lessMemory_seg, shuffle_datasets_lessMemory
+from DWonder.SEG.network import SEG_Network_3D_Unet
+from DWonder.SEG.utils import FFDrealign4, inv_FFDrealign4
 #############################################################################################################################################
 parser = argparse.ArgumentParser()
 parser.add_argument("--epoch", type=int, default=0, help="epoch to start training from")
