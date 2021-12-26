@@ -10,19 +10,19 @@ import numpy as np
 from skimage import io
 import math
 
-from deepwonder.data_process import Img2Subimg
+from DWonder.data_process import Img2Subimg
 
-from deepwonder.RMBG.network import Network_3D_Unet
-from deepwonder.SEG.network import SEG_Network_3D_Unet
+from DWonder.RMBG.network import Network_3D_Unet
+from DWonder.SEG.network import SEG_Network_3D_Unet
 
-from deepwonder.WF2NoBG_FFD import wf2nobg_ffd
-from deepwonder.SEG3DUnet import seg_3dunet
-from deepwonder.SEG3DUnet_FFD import seg_3dunet_ffd
+from DWonder.WF2NoBG_FFD import wf2nobg_ffd
+from DWonder.SEG3DUnet import seg_3dunet
+from DWonder.SEG3DUnet_FFD import seg_3dunet_ffd
 
-from deepwonder.MergeNeuron_SEG import merge_neuron_SEG, merge_neuron_SEG_mul
-from deepwonder.MN.utils import joint_neuron
-from deepwonder.MN.utils import listAddcontours_Laplacian_pytorch, list2contours
-from deepwonder.MN.utils import listAddtrace
+from DWonder.MergeNeuron_SEG import merge_neuron_SEG, merge_neuron_SEG_mul
+from DWonder.MN.utils import joint_neuron
+from DWonder.MN.utils import listAddcontours_Laplacian_pytorch, list2contours
+from DWonder.MN.utils import listAddtrace
 import scipy.io as scio
 
 import warnings
