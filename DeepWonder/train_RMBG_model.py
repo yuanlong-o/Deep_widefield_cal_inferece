@@ -10,10 +10,10 @@ from torch.utils.tensorboard import SummaryWriter
 import functools
 import numpy as np
 
-from deepwonder.RMBG.utils import FFDrealign4, inv_FFDrealign4
-from deepwonder.RMBG.Discriminator import NLayerDiscriminator3D
-from deepwonder.RMBG.network import Network_3D_Unet
-from deepwonder.RMBG.data_process import train_preprocess_lessMemory_segBG, shuffle_datasets_lessMemory
+from DWonder.RMBG.utils import FFDrealign4, inv_FFDrealign4
+from DWonder.RMBG.Discriminator import NLayerDiscriminator3D
+from DWonder.RMBG.network import Network_3D_Unet
+from DWonder.RMBG.data_process import train_preprocess_lessMemory_segBG, shuffle_datasets_lessMemory
 
 from skimage import io
 #############################################################################################################################################
