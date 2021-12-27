@@ -93,7 +93,7 @@ $ source activate deepwonder_env
 $ python script_train_SEG.py train
 ```
 The trained neuron segmentation model will show up in *DeepWonder/SEG_pth* folder.
-
+ 
 ## 🤝 Other information <a name="Information"></a>
 ### **📝** Citation <a name="Citation"></a>
 
