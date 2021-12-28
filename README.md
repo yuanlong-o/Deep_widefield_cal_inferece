@@ -64,7 +64,7 @@ Since the uploaded pretrained DeepWonder was trained on the synthetic data from 
 
 ### **💡** Run Demo data with Google Colab <a name="Colab"></a>
 We have stored our data in Google Colab, which is a free Jupyter notebook environment that requires no setup and runs entirely in the cloud. A demo notebook with full processing of DeepWonder on several demo datasets (including NAOMi1p virtual datasets, cropped RUSH datasets, and two-photon validation datasets, all mounted to the Google Colab using Google Drive) is available through Colab via 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/15TvsyEYgE1iGpaNWkq3flXOw52I51mVa/view?usp=sharing).
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/15TvsyEYgE1iGpaNWkq3flXOw52I51mVa).
 By copying that notebook to your online server (like Colab), you can also process linked data in the online fashion.
 
 ## **🔁** Train DeepWonder <a name="Train"></a>
