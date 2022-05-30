@@ -60,7 +60,7 @@ We upload three demo data on Google drive: [synthetic widefield data by NAOMi1p 
 
     •	Data that are distributed in different cortical depths (widefield + NA 0.27 2p). 
 
-    •	High-NA validation data that are captured in multiple cortical regions (widefield + NA 0.60 2p)
+    •	High-NA validation data that are captured in multiple cortical regions (widefield + NA 0.60 2p).
 
 
 ### **💡** Run the trained model <a name="Run"></a>
