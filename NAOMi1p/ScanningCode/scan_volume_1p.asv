@@ -398,7 +398,6 @@ saveastiff(im2uint16(img_w0 / max(img_w0(:))), sprintf('%s\\f0img.tiff', output_
 
 %% hemodynamics modeling
 % get net vessel volume
-if vessel_mod.flag
 top =(N3 -  size(PSF_struct.psf, 3)) / 2;
 valid_vessel = neur_vol.neur_ves(:, :, top + 1 : top + Np3);
 se = strel('sphere', 8);
@@ -406,11 +405,10 @@ se = strel('sphere', 8);
 valid_vessel = imopen(valid_vessel, se);
 
 rng(123)
-dilate_trace = rand((vessel_mod.FOV_N +1)* (vessel_mod.FOV_N +1)* (vessel_mod.FOV_N+1), ...
+dilate_trace = rand((vessel_mod.N_cut +1)* (vessel_mod.N_cut +1)* (vessel_mod.N_cut +1), ...
                     round(Nt / (vessel_mod.frate / vessel_mod.vessel_dynamics)));
-dilate_trace = imresize(dilate_trace, [(vessel_mod.FOV_N+1)* (vessel_mod.FOV_N+1)* (vessel_mod.FOV_N+1), Nt]);
+dilate_trace = imresize(dilate_trace, [(vessel_mod.N_cut +1)* (vessel_mod.N_cut +1)* (vessel_mod.N_cut +1), Nt]);
 dilate_trace(dilate_trace < 0) = 0;
-end
 
 %% Iteratively scan the volume
 
@@ -454,14 +452,6 @@ if ~isstruct(PSF)
         y_off = vec(min(max(1,y_pos+y_shr + ...
                         randsample(d_stps, N1, true)'),2*scan_buff+1));    % Randomly select offset for each row (+/-0.5um), in addition to the shearing vector
         clear TMPvol; 
-        
-        %% vessel volume
-        if vessel_mod.flag
-            vessel_img = vessel_dilation(valid_vessel, vessel_mod.FOV_N, vessel_mod.seed, vessel_mod.max_dilate_amp, dilate_trace, kk);
-        else
-            vessel_img = ones(size(WMPvol_w_bg(:, :, z_loc:(z_loc+Np3-1))));
-        end
-        
         %% add volumes
         WMPvol_w_bg = zeros(N1,N2,N3,'single');                                 % Reset the temporary volume - It's an order of magnitde faster to scrap and start over                                                
         WMPvol_w_bg_pure = zeros(N1,N2,N3,'single');
@@ -472,8 +462,8 @@ if ~isstruct(PSF)
                                         somaVol{ll,2}, exp_level * soma_act(ll,kk));    % Iteratively add in each neuron's soma activity
             end
         end 
-        clean_img_wo_bg = single_scan((WMPvol_w_bg(:,:,...
-                                        z_loc:(z_loc+Np3-1)) + f0vol_wo_bg(:,:,z_loc:(z_loc+Np3-1))) .* vessel_img, ...
+        clean_img_wo_bg = single_scan(WMPvol_w_bg(:,:,...
+                                        z_loc:(z_loc+Np3-1)) + f0vol_wo_bg(:,:,z_loc:(z_loc+Np3-1)), ...
                                         size(PSF), freq_psf, scan_avg, true); 
         
         
@@ -509,10 +499,11 @@ if ~isstruct(PSF)
             end
         end
         
-
+        %% vessel volume
+        vessel_img = vessel_dilation(valid_vessel, vessel_mod.N_cut, vessel_mod.seed, vessel_mod.max_dilate_amp, dilate_trace, kk);
         %% get clean image
-        clean_img_w_bg = (sigscale/(2*sfrac^2))*single_scan((WMPvol_w_bg(:,:,...
-                  z_loc:(z_loc+Np3-1))+f0vol(:,:,z_loc:(z_loc+Np3-1))) .* vessel_img,...
+        clean_img_w_bg = (sigscale/(2*sfrac^2))*single_scan(WMPvol_w_bg(:,:,...
+                  z_loc:(z_loc+Np3-1))+f0vol(:,:,z_loc:(z_loc+Np3-1)),...
                                      size(PSF), freq_psf, scan_avg, true); % Scan a single frame, normalization for pixel size and scanning code
         
         %% contaminations of clean image

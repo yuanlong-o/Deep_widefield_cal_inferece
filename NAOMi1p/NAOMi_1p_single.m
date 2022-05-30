@@ -2,7 +2,7 @@ clc, clear
 close all
 
 %% this file is used to generate NAOMi1p data
-%  last update: 12/17/2021. YZ
+%  last update: 5/29/2022. YZ
 
 %% add path
 installNAOMi1p
@@ -25,7 +25,13 @@ spike_opts.nt = nt + 200;
 spike_opts.dt = 1 / fn;
 wdm_params.pavg = pavg;
 
-
+%% vessel modulation
+vessel_mod.flag = true; % true for enable vessel modulation.
+vessel_mod.frate = fn; % frame rate
+vessel_mod.vessel_dynamics = 2; % vessel dilation rate
+vessel_mod.FOV_N = 2; % crop the whole FOV into patches for individual modulation
+vessel_mod.max_dilate_amp = 10; % dilate amplitude
+vessel_mod.seed = 10; 
 %% output path
 output_dir = sprintf('Z:\\YZ_personal_storage\\deep_widefield_calcium_inference\\data2\\%s\\res_%.2f\\vol_%d_%d_NA_%.2f_Hz_%d_exp_%d_d_%dk_pw_%.2f', ...
                                             mode, pixel_size, vol_params.vol_sz(1), vol_params.vol_sz(3), ...
@@ -94,7 +100,7 @@ tic
 % vol_out = importdata(sprintf('%s\\vol_out.mat', output_dir));
 % PSF_struct = importdata(sprintf('%s\\PSF_struct.mat',output_dir));     
 scan_volume_1p(vol_out, PSF_struct, neur_act, ...
-                       vol_params, scan_params, noise_params, spike_opts, wdm_params, pixel_size, exp_level, output_dir); % Perform the scanning simulation
+                       vol_params, scan_params, noise_params, spike_opts, wdm_params, vessel_mod, pixel_size, exp_level, output_dir); % Perform the scanning simulation
 fprintf('Simulated recordings in %f seconds.\n', toc); 
 
 
