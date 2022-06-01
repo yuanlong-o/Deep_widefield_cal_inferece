@@ -96,6 +96,10 @@ $ source activate deepwonder_env
 $ python script_train_RMBG.py train
 ```
 The trained removing background model will show up in *DeepWonder/RMBG_pth* folder.
+We also provide pre-trained models to speed up the fine tuning process. This model is fully trained on a large number of simulated data with different characteristics and can be used as the initialization of the background removal network model. Run the script_train_RMBG.py to train the background removal network with pretrain model initilaization.
+```
+$ python script_train_RMBG_conti.py train
+```
 
 ### **💡** Train neuron segmentation network <a name="TrainNS"></a>
 Put the backagrond removed movie generated to the *DeepWonder/datasets/XXXX/image* folder as inputs, and the corresponding segmented masks to the *DeepWonder/datasets/XXXX/mask* folder as labels. A good option to get the mask data is to binarize simulated neurons for each of frames (individual neurons are in the vol_out structure from NAOMi1p output). Alternatively, running other two-photon segmentation tools (like CaImAn https://github.com/flatironinstitute/CaImAn) to get segments can also work but probably with performance dropping. Run the script_train_SEG.py to train the neuron segmentation network.
