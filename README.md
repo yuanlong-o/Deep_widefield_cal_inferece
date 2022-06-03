@@ -1,4 +1,4 @@
-# Deep widefield neuron finder (DeepWonder)
+# Deep learning-enhanced widefield neuron finder (DeepWonder)
 <img src="img/deepwonder_logo.png" width="800" align="center">
 Implementation for deep widefield neuron finder (DeepWonder)
 
@@ -22,7 +22,7 @@ Implementation for deep widefield neuron finder (DeepWonder)
     2. [Email](#Email)
 
 ## **📚** Overview <a name="Overview"></a>
-Widefield imaging provides optical access to multi-millimeter fields of view in video rate, but cell-resolved calcium imaging has mostly been contaminated by tissue scattering and calcium inference suffers multiple times slower processing speed than two-photon microscope in the same scale. We present a deep widefield neuron finder (DeepWonder), which is fueled by numerical recordings but effectively works on experimental data with an order of magnitude of speed improvement and improved precision and accuracy. With DeepWonder, widefield calcium recordings can be quickly converted into background-free movies, and neuronal segments and activities then be demixed out. For more details and results, please see our companion paper titled "Deep widefield neuron finder driven by virtual biological data".
+Widefield imaging provides optical access to multi-millimeter fields of view in video rate, but cell-resolved calcium imaging has mostly been contaminated by tissue scattering and calcium inference suffers multiple times slower processing speed than two-photon microscope in the same scale. We present a deep widefield neuron finder (DeepWonder), which is fueled by numerical recordings but effectively works on experimental data with an order of magnitude of speed improvement and improved precision and accuracy. With DeepWonder, widefield calcium recordings can be quickly converted into background-free movies, and neuronal segments and activities then be demixed out. For more details and results, please see our companion paper titled "Rapid widefield neuron finder driven by virtual calcium imaging data".
 
 <img src="img/Workflow.png" width="800" align="center">
 
