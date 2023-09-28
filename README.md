@@ -114,4 +114,4 @@ The trained neuron segmentation model will show up in *DeepWonder/SEG_pth* folde
 Zhang, Y., Zhang, G., Han, X. et al. Rapid detection of neurons in widefield calcium imaging datasets after training with synthetic data. Nat Methods (2023). https://doi.org/10.1038/s41592-023-01838-7
    
 ### **📝** Email <a name="Email"></a>
-We are pleased to address any questions regarding the above tools through emails (zhanggx19@mails.tsinghua.edu.cn or ylzhang16@mails.tsinghua.edu.cn).
+We are pleased to address any questions regarding the above tools through emails (zhanggx19@mails.tsinghua.edu.cn or yuanlongzhang94@gmail.com).
