@@ -26,8 +26,14 @@ Widefield imaging provides optical access to multi-millimeter fields of view in 
 
 <img src="img/Workflow.png" width="800" align="center">
 
+
 ## **⏳** Quick start DeepWonder <a name="Start"></a>
+
 This tutorial will show how DeepWonder removes backgrounds in  widefield captures and further segments neurons.
+
+### **💡** Alternative tutorial <a name="Alternative"></a>
+If you encounter issues following the tutorial below, you can try the pipeline in the 'alternative' folder. There's a separate README file within that folder to guide you.
+
 ### **💡** Environment <a name="Environment"></a>
 * Ubuntu 16.04 
 * Python 3.6
